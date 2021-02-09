@@ -48,6 +48,10 @@ defmodule Routeplanner.MixProject do
       {:ueberauth, "~> 0.6"},
       {:oauth2, "~> 2.0", override: true},
       {:ueberauth_google, "~> 0.10"},
+      {:ueberauth_identity, "~> 0.3.0"},
+      {:argon2_elixir, "~> 2.3"},
+      {:guardian, "~> 2.1"},
+      {:bamboo, "~> 1.7"},
     ]
   end
 

@@ -1,41 +1,33 @@
 defmodule RouteplannerWeb.AuthController do
   use RouteplannerWeb, :controller
-
   plug Ueberauth
 
-  alias Ueberauth.Strategy.Helpers
-  alias Routeplanner.UserFromAuth
+  alias Routeplanner.Accounts
+  alias RouteplannerWeb.Authentication
 
-  def request(conn, _params) do
-    render(conn, "request.html", callback_url: Helpers.callback_url(conn))
-  end
-
-  def delete(conn, _params) do
+  def callback(%{assigns: %{ueberauth_failure: _}} = conn, _params) do
     conn
-    |> put_flash(:info, "You have been logged out!")
-    |> clear_session()
-    |> redirect(to: "/")
+    |> put_flash(:error, "Authentication failed.")
+    |> redirect(to: Routes.registration_path(conn, :index))
   end
 
-  def callback(%{assigns: %{uberauth_failure: _fails}} = conn, _params) do
-    conn
-    |> put_flash(:error, "Failed to authenticate.")
-    |> redirect(to: "/")
-  end
+  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
+    case Accounts.get_or_register(auth) do
+      {:ok, account} ->
+        case Accounts.is_approved(account.email) do
+          true -> conn
+          |> Authentication.log_in(account)
+          |> redirect(to: Routes.profile_path(conn, :show))
 
-  def callback(%{assigns: %{uberauth_auth: auth}} = conn, _params) do
-    case UserFromAuth.find_or_create(auth) do
-      {:ok, user} ->
-        conn
-        |> put_flash(:info, "Successfully authenticated.")
-        |> put_session(:current_user, user)
-        |> configure_session(renew: true)
-        |> redirect(to: "/")
+          false -> conn
+          |> put_flash(:error, "Your account must be approved by Michael, send him a message!")
+          |> redirect(to: Routes.login_path(conn, :login))
+        end
 
-      {:error, reason} ->
+      {:error, _error_changeset} ->
         conn
-        |> put_flash(:error, reason)
-        |> redirect(to: "/")
+        |> put_flash(:error, "Authentication failed.")
+        |> redirect(to: Routes.registration_path(conn, :index))
     end
   end
 end

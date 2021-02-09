@@ -1,0 +1,6 @@
+<section class="phx-hero">
+    <h1>Check <a target="_blank" href="https://<%= @domain %>"><%= @email %></a></h1>
+    <h2>for a verification email to complete your registration.</h2>
+    <br/>
+    <p>There's a good chance it went to spam so check that too.</p>
+</section>

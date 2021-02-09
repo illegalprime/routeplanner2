@@ -1,4 +1,4 @@
-defmodule RouteplannerWeb.AuthView do
+defmodule RouteplannerWeb.LoginView do
   @moduledoc false
   use RouteplannerWeb, :view
 end

@@ -4,6 +4,11 @@ defmodule RouteplannerWeb.Router do
   # TODO: make OAUTH accounts and then register with email?
   # TODO: email confirmation
 
+  defp api_auth(conn, _opts) do
+    password = System.get_env("API_KEY")
+    Plug.BasicAuth.basic_auth(conn, username: "api", password: password)
+  end
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -14,6 +19,10 @@ defmodule RouteplannerWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+  end
+
+  pipeline :secure_api do
+    plug :api_auth
   end
 
   pipeline :guardian do
@@ -27,7 +36,6 @@ defmodule RouteplannerWeb.Router do
   scope "/", RouteplannerWeb do
     pipe_through [:browser, :guardian]
 
-    get "/", PageController, :index
     get "/login", LoginController, :index
     get "/register", RegistrationController, :index
     get "/verify", RegistrationController, :verify_email
@@ -45,14 +53,23 @@ defmodule RouteplannerWeb.Router do
   scope "/", RouteplannerWeb do
     pipe_through [:browser, :guardian, :browser_auth]
 
+    get "/", PageController, :index
     resources "/profile", ProfileController, only: [:show], singleton: true
     delete "/logout", LoginController, :logout
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", RouteplannerWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", RouteplannerWeb do
+    pipe_through :api
+
+    get "/status", ApiController, :status
+  end
+
+  scope "/api/import", RouteplannerWeb do
+    pipe_through [:api, :secure_api]
+
+    post "/court_cases", CourtCasesController, :import_cases
+  end
 
   # Enables LiveDashboard only for development
   #

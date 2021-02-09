@@ -9,7 +9,7 @@ defmodule RouteplannerWeb.RegistrationController do
 
   def index(conn, _) do
     if Authentication.get_current_account(conn) do
-      redirect(conn, to: Routes.profile_path(conn, :show))
+      redirect(conn, to: Routes.page_path(conn, :index))
     else
         render(conn, :index,
           changeset: Accounts.change_account(),

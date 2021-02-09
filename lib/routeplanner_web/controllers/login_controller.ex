@@ -6,7 +6,7 @@ defmodule RouteplannerWeb.LoginController do
 
   def index(conn, _params) do
     if Authentication.get_current_account(conn) do
-      redirect(conn, to: Routes.profile_path(conn, :show))
+      redirect(conn, to: Routes.page_path(conn, :index))
     else
         render(conn, :index,
           changeset: Accounts.change_account(),
@@ -20,7 +20,7 @@ defmodule RouteplannerWeb.LoginController do
       {:ok, account} ->
         conn
         |> Authentication.log_in(account)
-        |> redirect(to: Routes.profile_path(conn, :show))
+        |> redirect(to: Routes.page_path(conn, :index))
 
       {:error, :not_verified} ->
         conn

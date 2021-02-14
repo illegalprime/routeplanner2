@@ -17,7 +17,7 @@ module.exports = (env, options) => {
       ]
     },
     entry: {
-      'app': glob.sync('./vendor/**/*.js').concat(['./js/app.js'])
+      'app': glob.sync('./vendor/**/*.js').concat(['./js/app.js']),
     },
     output: {
       filename: '[name].js',
@@ -41,7 +41,17 @@ module.exports = (env, options) => {
             'css-loader',
             'sass-loader',
           ],
-        }
+        },
+        {
+          test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+          use: [{
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: '../fonts'
+            }
+          }]
+        },
       ]
     },
     plugins: [
@@ -49,5 +59,5 @@ module.exports = (env, options) => {
       new CopyWebpackPlugin([{ from: 'static/', to: '../' }])
     ]
     .concat(devMode ? [new HardSourceWebpackPlugin()] : [])
-  }
+  };
 };

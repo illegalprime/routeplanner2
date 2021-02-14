@@ -1,5 +1,6 @@
 defmodule RouteplannerWeb.Router do
   use RouteplannerWeb, :router
+  import Phoenix.LiveView.Router
 
   # TODO: make OAUTH accounts and then register with email?
   # TODO: email confirmation
@@ -12,8 +13,16 @@ defmodule RouteplannerWeb.Router do
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
-    plug :fetch_flash
+    plug :fetch_live_flash
     plug :protect_from_forgery
+    plug :put_secure_browser_headers
+    plug :put_root_layout, {RouteplannerWeb.LayoutView, :root}
+  end
+
+  pipeline :protected_js do
+    plug :accepts, ["js"]
+    plug :fetch_session
+    plug :fetch_live_flash
     plug :put_secure_browser_headers
   end
 
@@ -53,9 +62,15 @@ defmodule RouteplannerWeb.Router do
   scope "/", RouteplannerWeb do
     pipe_through [:browser, :guardian, :browser_auth]
 
-    get "/", PageController, :index
+    live "/", Live.Planner
     resources "/profile", ProfileController, only: [:show], singleton: true
     delete "/logout", LoginController, :logout
+  end
+
+  # javascript behind API keys
+  scope "/third-party", RouteplannerWeb do
+    pipe_through [:protected_js, :guardian, :browser_auth]
+    get "/google-maps.js", AssetController, :gmaps
   end
 
   # Other scopes may use custom stacks.

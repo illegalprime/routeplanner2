@@ -16,11 +16,17 @@ config :routeplanner, RouteplannerWeb.Endpoint,
   secret_key_base: "5kOJMVy9Z3uOpAtLv/7KwEeQt9PqyRcZFTRJXh438uH8E/7fDY8wtjZyc0efvrL2",
   render_errors: [view: RouteplannerWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Routeplanner.PubSub,
-  live_view: [signing_salt: "Eu0KjZWQ"]
+  live_view: [signing_salt: "FmI5-AINE5hA4gDF"]
 
 config :routeplanner, RouteplannerWeb.Authentication,
   issuer: "routeplanner",
   secret_key: System.get_env("GUARDIAN_SECRET_KEY")
+
+config :routeplanner, RouteplannerWeb.AssetController,
+  gmaps_api_key: System.get_env("GMAPS_API_KEY")
+
+config :routeplanner, Routeplanner.GoogleMaps,
+  gmaps_api_key: System.get_env("GMAPS_API_KEY")
 
 # Configures Elixir's Logger
 config :logger, :console,

@@ -20,7 +20,7 @@ defmodule RouteplannerWeb.LoginController do
       {:ok, account} ->
         conn
         |> Authentication.log_in(account)
-        |> redirect(to: Routes.page_path(conn, :index))
+        |> redirect(to: "/") # TODO: figure out how to route between live templates
 
       {:error, :not_verified} ->
         conn

@@ -1,4 +1,5 @@
 defmodule Routeplanner.CourtCases.CourtCase do
+  require Logger
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -19,7 +20,7 @@ defmodule Routeplanner.CourtCases.CourtCase do
     field :status, :string
     field :judgement, :string
     field :type, :string
-    field :file_date, :string
+    field :file_date, :date
     field :next_event_date, :string
     field :docket, :string
 
@@ -32,7 +33,7 @@ defmodule Routeplanner.CourtCases.CourtCase do
   @doc false
   def new(court_case, attrs) do
     court_case
-    |> cast(attrs, [
+    |> cast(convert_date(attrs), [
       :case_id, :name, :plaintiff,
       :longitude, :latitude, :address, :street, :city, :state, :zip,
       :status, :judgement, :type, :file_date, :next_event_date, :docket,
@@ -45,5 +46,14 @@ defmodule Routeplanner.CourtCases.CourtCase do
     |> put_change(:visited, false)
     |> put_change(:active, false)
     |> unique_constraint(:case_id)
+  end
+
+  def convert_date(attrs) do
+    Logger.warn("#{inspect(attrs)}")
+    {:ok, date} = attrs["file_date"]
+    |> String.split("/")
+    |> Enum.map(&String.to_integer/1)
+    |> (fn [month, day, year] -> Date.new(year, month, day) end).()
+    %{ attrs | "file_date" => date }
   end
 end

@@ -19,7 +19,7 @@ defmodule Routeplanner.Repo.Migrations.CreateCourtCases do
       add :status, :string
       add :judgement, :string
       add :type, :string
-      add :file_date, :string
+      add :file_date, :date
       add :next_event_date, :string
       add :docket, :text
 

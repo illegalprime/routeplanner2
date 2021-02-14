@@ -4,7 +4,9 @@ defmodule RouteplannerWeb.CourtCasesController do
 
   def import_cases(conn, %{"cases" => cases}) do
     # TODO: batch insert / update AND report errors correctly
-    Enum.each(cases, &CourtCases.add/1)
+    Enum.each(cases, fn record ->
+      CourtCases.add(record)
+    end)
     json(conn, %{result: :ok})
   end
 end

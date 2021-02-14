@@ -1,0 +1,161 @@
+<div class="menu-container">
+    <div class="ui-menu">
+        <a phx-click="menu_plan"
+           class="button button-clear <%= if @section == :plan do %>selected<% end %>"
+        >Plan Routes</a>
+        <a phx-click="menu_manage"
+           class="button button-clear <%= if @section == :manage do %>selected<% end %>"
+        >Manage Routes</a>
+    </div>
+</div>
+
+<div class="main-ui">
+    <div class="map-view" phx-update="ignore">
+        <div class="map-container"
+             style="height:100%;" id="map">
+        </div>
+        <!-- TODO -->
+        <div class="map-controls">
+            <button id="clear-polygon-btn">Reset</button>
+            <button id="undo-polygon-btn">Undo</button>
+        </div>
+    </div>
+
+    <%= if @section == :plan do %>
+    <div class="court-cases">
+        <div class="case-filters">
+            <button class="button-outline">
+                <%= length @selected_cases %> / <%= length @court_cases %> Selected
+            </button>
+            <button phx-click="toggle_selected">
+                <%= if @filters.selected do %>
+                    Show All
+                <% else %>
+                    Show Selected
+                <% end %>
+            </button>
+            <form id="start-loc">
+                <select name="canvass-start">
+                    <option value="forest-hills">From Forest Hills</option>
+                </select>
+            </form>
+            <form phx-change="filter_days" id="filter_days">
+                <select name="days-filter">
+                    <option value="1">Past Day</option>
+                    <%= for day <- 2..50 do %>
+                        <option
+                            <%= if @filters.days == day do %>selected<% end %>
+                            value="<%= day %>"
+                        >Past <%= day %> Days</option>
+                    <% end %>
+                </select>
+            </form>
+            <button phx-click="plan_route">▶ Plan Route</button>
+        </div>
+
+        <div class="case-table">
+        <table id="all-cases-table">
+            <tr><th>Landlord</th> <th>Address</th></tr>
+            <%= for row <- @court_cases do %>
+                <% selected = Enum.member?(@selected_cases, row.case_id) %>
+                <%= if not @filters.selected or selected do %>
+                    <tr class="court-case <%= if selected do %>selected<% end %>">
+                        <td><%= row.plaintiff %></td>
+                        <td><%= row.street %>, <%= row.city %></td>
+                    </tr>
+                <% end %>
+            <% end %>
+        </table>
+        </div>
+    </div>
+    <% end %>
+
+    <%= if @section == :manage do %>
+    <div class="routes">
+        <div class="route-table">
+            <table id="all-routes-table">
+                <tr> <th>Route Name</th> <th>Size</th> <th>Time MM:SS</th></tr>
+                <%= for route <- @routes do %>
+                    <tr phx-click="show_route"
+                        phx-value-name="<%= route.name %>"
+                        class="route <%= if route.name == @selected_route do %>
+                                   selected
+                        <% end %>">
+                        <td><%= route.name %> <i class="fas fa-camera"></i></td>
+                        <td><%= length route.cases %></td>
+                        <td><%= route.total_time %></td>
+                    </tr>
+                <% end %>
+            </table>
+        </div>
+
+        <div class="route-controls">
+            <button phx-click="show_import_route">Import Route</button>
+        </div>
+    </div>
+    <% end %>
+
+    <script src="<%= @gmaps_url %>" async></script>
+</div>
+
+<!-- Modals -->
+<%= if @modal.current == :import_route do %>
+<div class="modal">
+    <div class="modal-dialog">
+
+        <a href="#" phx-click="close_import_route"
+           class="btn-close closemodal">&times;</a>
+
+        <div class="modal-header"> <h2>Import a Route!</h2> </div>
+
+        <%= form_for @modal.import_route.cs, "#", [
+            phx_change: :validate_route,
+            phx_submit: :import_route,
+            class: "modal-body",
+        ], fn f -> %>
+            <%= label f, :name %>
+            <%= text_input f, :name %>
+            <%= error_tag f, :name %>
+
+            <%= submit "Import" %>
+        <!-- <input type="text" name="name" placeholder="Route Name" size="60" />
+             <br/>
+             <textarea name="cases" style="height:200px;" rows="30" cols="50"
+             placeholder="Type Case IDs here, separated by new lines"
+             ></textarea>
+             <br/>
+             <input type="submit" value="Import" /> -->
+        <% end %>
+    </div>
+</div>
+<% end %>
+
+<!-- Hook for what data to display on the map. -->
+<!-- TODO: there's a better way to send data than the dom? -->
+<table
+    style="display:none;"
+    phx-hook="MapDisplay"
+    id="map-display"
+    data-days-filter="<%= @filters.days %>"
+    data-connect="<%= @map_connect %>"
+>
+    <%= for row <- @map_view do %>
+        <tr
+            data-case-id="<%= row.case_id %>"
+            data-lat="<%= row.latitude %>"
+            data-lng="<%= row.longitude %>"
+            data-name="<%= row.name %>"
+            data-landlord="<%= row.plaintiff %>"
+            data-date="<%= row.file_date %>"
+            data-street="<%= row.street %>"
+            data-city="<%= row.city %>"
+        >
+        </tr>
+    <% end %>
+</table>
+
+<br/>
+<section class="container">
+    <p class="alert alert-info" role="alert"><%= live_flash(@flash, :info) %></p>
+    <p class="alert alert-danger" role="alert"><%= live_flash(@flash, :error) %></p>
+</section>

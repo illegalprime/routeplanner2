@@ -31,8 +31,10 @@ defmodule Routeplanner.Routes do
   end
 
   def list() do
+    # TODO: do sorting in database
     Repo.all(Route)
     |> Enum.sort_by(&route_sort/1)
+    |> Enum.reverse()
   end
 
   def find(name) do
@@ -43,6 +45,24 @@ defmodule Routeplanner.Routes do
     Route.changeset(route, %{})
   end
 
+  def toggle_visited!(name) do
+    route = find(name)
+    visited = is_nil(route.visited) or not route.visited
+    # mark cases as visited
+    route.cases
+    |> Enum.map(fn c -> CourtCases.mark_visited!(c, visited) end)
+    # mark route as visited
+    Route.changeset(route, %{visited: visited})
+    |> Repo.update!()
+  end
+
+  def toggle_deleted!(name) do
+    route = find(name)
+    deleted = is_nil(route.deleted) or not route.deleted
+    Route.changeset(route, %{deleted: deleted})
+    |> Repo.update!()
+  end
+
   def verify(params) do
     %Route{}
     |> Route.changeset(params)
@@ -51,8 +71,11 @@ defmodule Routeplanner.Routes do
 
   # TODO: import missing routes: R32, R33
   defp route_sort(route) do
-    Regex.scan(~r/\p{Nd}+/, route.name)
+    by_number = Regex.scan(~r/\p{Nd}+/, route.name)
     |> Enum.flat_map(fn m -> Enum.map(m, &String.to_integer/1) end)
     |> Enum.concat([route.name])
+    not_visited = is_nil(route.visited) or not route.visited
+    not_deleted = is_nil(route.deleted) or not route.deleted
+    [ not_deleted | [ not_visited | by_number ] ]
   end
 end

@@ -33,18 +33,24 @@ defmodule Routeplanner.CourtCases.CourtCase do
   @doc false
   def new(court_case, attrs) do
     court_case
-    |> cast(convert_date(attrs), [
+    |> changeset(convert_date(attrs))
+    |> put_change(:visited, false)
+    |> put_change(:active, false)
+  end
+
+  def changeset(court_case, attrs) do
+    court_case
+    |> cast(attrs, [
       :case_id, :name, :plaintiff,
       :longitude, :latitude, :address, :street, :city, :state, :zip,
       :status, :judgement, :type, :file_date, :next_event_date, :docket,
+      :visited, :active
     ])
     |> validate_required([
       :case_id, :name, :plaintiff,
       :longitude, :latitude, :address, :street, :city, :state, :zip,
       :status, :judgement, :type, :file_date, :next_event_date, :docket,
     ])
-    |> put_change(:visited, false)
-    |> put_change(:active, false)
     |> unique_constraint(:case_id)
   end
 

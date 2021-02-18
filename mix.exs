@@ -20,7 +20,7 @@ defmodule Routeplanner.MixProject do
   def application do
     [
       mod: {Routeplanner.Application, []},
-      extra_applications: [:logger, :runtime_tools, :ueberauth_google]
+      extra_applications: [:logger, :runtime_tools, :os_mon, :ueberauth_google]
     ]
   end
 
@@ -55,6 +55,7 @@ defmodule Routeplanner.MixProject do
       {:guardian, "~> 2.1"},
       {:bamboo, "~> 1.7"},
       {:httpoison, "~> 1.8"},
+      {:qr_code, "~> 2.2.0"},
     ]
   end
 

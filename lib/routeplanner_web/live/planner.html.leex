@@ -36,13 +36,14 @@
             </button>
             <form id="start-loc">
                 <select name="canvass-start">
+                    <option value="nowhere">From Anywhere</option>
                     <option value="forest-hills">From Forest Hills</option>
                 </select>
             </form>
             <form phx-change="filter_days" id="filter_days">
                 <select name="days-filter">
                     <option value="1">Past Day</option>
-                    <%= for day <- 2..50 do %>
+                    <%= for day <- 2..90 do %>
                         <option
                             <%= if @filters.days == day do %>selected<% end %>
                             value="<%= day %>"
@@ -50,7 +51,7 @@
                     <% end %>
                 </select>
             </form>
-            <button phx-click="plan_route">▶ Plan Route</button>
+            <button phx-click="show_plan_route">▶ Plan Route</button>
         </div>
 
         <div class="case-table">
@@ -74,15 +75,64 @@
     <div class="routes">
         <div class="route-table">
             <table id="all-routes-table">
-                <tr> <th>Route Name</th> <th>Size</th> <th>Time MM:SS</th></tr>
+                <tr><th>Route Name</th><th>Edit</th><th>Stops</th><th>Drive Time</th></tr>
                 <%= for route <- @routes do %>
+                    <% visited = if route.visited do "active" end %>
+                    <% deleted = if route.deleted do "active" end %>
+                    <% is_hidden = MapSet.member?(@hidden_routes, route.name) %>
+                    <% hidden = if is_hidden do "active" else "" end %>
+                    <% marked_out = "text-decoration:line-through;opacity:0.5;" %>
+                    <% selected = if route.name == @selected_route do "selected" end %>
                     <tr phx-click="show_route"
                         phx-value-name="<%= route.name %>"
-                        class="route <%= if route.name == @selected_route do %>
-                                   selected
-                        <% end %>">
-                        <td><%= route.name %> <i class="fas fa-camera"></i></td>
-                        <td><%= length route.cases %></td>
+                        class="route <%= selected %>">
+                        <td style="<%= if is_hidden or route.deleted do marked_out end %>">
+                            <%= route.name %>
+                        </td>
+                        <td class="edit-route">
+                            <i phx-click="route_visited"
+                               phx-value-name="<%= route.name %>"
+                               class="fas fa-check <%= visited %>"></i>
+                            <i phx-click="route_hide"
+                               phx-value-name="<%= route.name %>"
+                               class="fas fa-eye-slash <%= hidden %>"></i>
+                            <i phx-click="route_trash"
+                               phx-value-name="<%= route.name %>"
+                               class="fas fa-trash <%= deleted %>"></i>
+                            <a target="_blank"
+                               href="<%= Routes.route_page_path(@socket, :show, route.name) %>"
+                               class="fas fa-external-link-alt"></a>
+                            <div class="tooltips">
+                                <span class="tooltip visited">
+                                    <%= if route.visited do %>
+                                        Mark Unvisited
+                                    <% else %>
+                                        Mark Visited
+                                    <% end %>
+                                </span>
+                                <span class="tooltip hide">
+                                    <%= if is_hidden do %>
+                                        Unhide
+                                    <% else %>
+                                        Hide
+                                    <% end %>
+                                </span>
+                                <span class="tooltip trash">
+                                    <%= if route.deleted do %>
+                                        Undelete
+                                    <% else %>
+                                        Delete
+                                    <% end %>
+                                </span>
+                                <span class="tooltip show">Open</span>
+                            </div>
+                        </td>
+                        <td>
+                            <%= if is_nil(route.visited) or not route.visited do %>
+                                <%= route.cases_shown %> /
+                            <% end %>
+                            <%= length route.cases %>
+                        </td>
                         <td><%= route.total_time %></td>
                     </tr>
                 <% end %>
@@ -90,12 +140,15 @@
         </div>
 
         <div class="route-controls">
+            <button class="button-outline">
+                <%= length @selected_cases %> / <%= length @court_cases %> Selected
+            </button>
             <button phx-click="show_import_route">Import Route</button>
         </div>
     </div>
     <% end %>
 
-    <script src="<%= @gmaps_url %>" async></script>
+    <script src="<%= Routes.asset_path(@socket, :gmaps) %>" async></script>
 </div>
 
 <!-- Modals -->
@@ -103,7 +156,7 @@
 <div class="modal">
     <div class="modal-dialog">
 
-        <a href="#" phx-click="close_import_route"
+        <a href="#" phx-click="close_modal"
            class="btn-close closemodal">&times;</a>
 
         <div class="modal-header"> <h2>Import a Route!</h2> </div>
@@ -111,23 +164,44 @@
         <%= form_for @modal.import_route.cs, "#", [
             phx_change: :validate_route,
             phx_submit: :import_route,
-            class: "modal-body",
+            class: "modal-body import-route-form",
         ], fn f -> %>
             <%= label f, :name %>
-            <%= text_input f, :name %>
+            <%= text_input f, :name, placeholder: "RXX_Name" %>
             <%= error_tag f, :name %>
 
+            <%= label f, :cases %>
+            <%= textarea f, :cases, placeholder: "Case IDs, separated by new lines" %>
+            <%= error_tag f, :cases %>
+
             <%= submit "Import" %>
-        <!-- <input type="text" name="name" placeholder="Route Name" size="60" />
-             <br/>
-             <textarea name="cases" style="height:200px;" rows="30" cols="50"
-             placeholder="Type Case IDs here, separated by new lines"
-             ></textarea>
-             <br/>
-             <input type="submit" value="Import" /> -->
         <% end %>
     </div>
 </div>
+<% end %>
+
+<%= if @modal.current == :plan_route do %>
+    <div class="modal">
+        <div class="modal-dialog">
+
+            <a href="#" phx-click="close_modal"
+               class="btn-close closemodal">&times;</a>
+
+            <div class="modal-header"><h2>Plan a Route!</h2></div>
+
+            <%= form_for @modal.plan_route.cs, "#", [
+                phx_change: :validate_route,
+                phx_submit: :plan_route,
+                class: "modal-body plan-route-form",
+            ], fn f -> %>
+                <%= label f, :name %>
+                <%= text_input f, :name, placeholder: "RXX_Name" %>
+                <%= error_tag f, :name %>
+
+                <%= submit "Plan!" %>
+            <% end %>
+        </div>
+    </div>
 <% end %>
 
 <!-- Hook for what data to display on the map. -->
@@ -139,7 +213,7 @@
     data-days-filter="<%= @filters.days %>"
     data-connect="<%= @map_connect %>"
 >
-    <%= for row <- @map_view do %>
+    <%= for row <- get_cases(@map_view, @hidden_cases) do %>
         <tr
             data-case-id="<%= row.case_id %>"
             data-lat="<%= row.latitude %>"

@@ -41,8 +41,11 @@
 
 tr.selected {
   background-color: rebeccapurple;
-  color: white;
+  color: white !important;
   font-weight: bold;
+  td.edit-route a {
+    color: white !important;
+  }
 }
 
 div.map-controls {
@@ -93,7 +96,7 @@ div.map-controls {
     cursor: pointer;
   }
   tr.route:hover:not(.selected) {
-    background-color: rgba(102, 51, 153, 0.5);
+    background-color: rgba(102, 51, 153, 0.2);
   }
 
   .court-cases {
@@ -129,6 +132,50 @@ div.map-controls {
   .routes {
     .route-controls {
       margin-top: 1rem;
+    }
+    td {
+      padding-top: 0.2rem;
+      padding-bottom: 0.2rem;
+    }
+
+    td.edit-route {
+      font-size: 1.7rem;
+      display: flex;
+      align-items: center;
+      a {
+        color: inherit !important;
+      }
+      .fas:not(:last-child) {
+        padding: 1rem 0.5rem 1rem 0.5rem;
+      }
+      .fas:not(.active) {
+        opacity: 0.2;
+      }
+      .fas:hover {
+        opacity: 1;
+      }
+      .fa-check:hover ~ .tooltips > .tooltip.visited {
+        display: inline;
+      }
+      .fa-eye-slash:hover ~ .tooltips > .tooltip.hide {
+        display: inline;
+      }
+      .fa-trash:hover ~ .tooltips > .tooltip.trash {
+        display: inline;
+      }
+      .fa-external-link-alt:hover ~ .tooltips > .tooltip.show {
+        display: inline;
+      }
+      .tooltip {
+        display: none;
+        opacity: 0.7;
+        font-size: 1.5rem;
+      }
+      .tooltips {
+        margin-left: 10px;
+        width: 100px;
+        font-weight: normal;
+      }
     }
   }
 }
@@ -191,6 +238,13 @@ body {
     border-radius: 5px;
     position: relative;
 
+    .import-route-form {
+      width: 500px;
+      textarea {
+        height: 200px;
+      }
+    }
+
     form {
       margin-bottom: 0;
 
@@ -219,3 +273,66 @@ body {
     }
   }
 }
+
+#show-route-page {
+  #route-stops {
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    tr td:last-child, tr td:first-child,
+    tr th:last-child, tr th:first-child
+    {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
+  .debrief-container {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    img.debrief-qr {
+      padding: 2rem;
+      background-color: white !important;
+    }
+
+    a.route-debrief {
+      font-family: monospace;
+      color: black;
+    }
+  }
+
+}
+
+@media print {
+  header {
+    display: none;
+  }
+
+  #route-stops {
+    tr td {
+      font-size: 1.3rem;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    tr {
+      -webkit-print-color-adjust: exact;
+    }
+  }
+
+  table tr td,
+  table tr th {
+    page-break-inside: avoid;
+  }
+
+  img.debrief-qr {
+    width: 250px;
+    height: 250px;
+  }
+
+  .footer-spacer {
+    display: none;
+  }
+}
+

@@ -1,0 +1,61 @@
+<section id="show-route-page">
+    <h1><%= @route.name %></h1>
+    <br/>
+    <div class="map-container"
+         phx-update="ignore"
+         data-load-markers="route-stops"
+         data-editable="no"
+         style="height:600px;width:100%;" id="map">
+    </div>
+    <br/>
+    <table
+        id="route-stops"
+        data-connect="true"
+        data-zoom="true"
+        data-number="true"
+    >
+        <tr data-ignore="true">
+            <th>#</th>
+            <th>Name</th>
+            <th>Landlord</th>
+            <th>Street</th>
+            <th>City</th>
+            <th>Filed</th>
+            <th>Drive</th>
+        </tr>
+        <%= for {stop, i} <- @route.cases |> Enum.with_index do %>
+            <tr
+                data-lat="<%= stop.latitude %>"
+                data-lng="<%= stop.longitude %>"
+                data-name="<%= stop.name %>"
+                data-landlord="<%= stop.plaintiff %>"
+                data-date="<%= stop.file_date %>"
+                data-street="<%= stop.street %>"
+                data-city="<%= stop.city %>"
+            >
+                <td><%= i + 1 %></td>
+                <td><%= stop.name %></td>
+                <td><%= stop.plaintiff %></td>
+                <td><%= stop.street %></td>
+                <td><%= stop.city %></td>
+                <td><%= stop.file_date %></td>
+                <td>
+                    <%= if i != 0 do %>
+                        <%= to_clock(Enum.at(@route.drive_times, i - 1)) %>
+                    <% else %>
+                        &mdash;
+                    <% end %>
+                </td>
+            </tr>
+        <% end %>
+    </table>
+
+    <div class="debrief-container">
+        <h3>Fill this out when you're done!</h3>
+        <h3><a class="route-debrief" href="<%= @form_link %>"><%= @form_link %></a></h3>
+        <img class="debrief-qr" src="data:image/svg+xml;base64,<%= qr_code(@form_link) %>" />
+    </div>
+
+    <script src="<%= Routes.asset_path(@conn, :gmaps) %>" async></script>
+</section>
+

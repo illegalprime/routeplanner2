@@ -11,14 +11,24 @@ defmodule RouteplannerWeb.Live.Planner do
   alias Routeplanner.CourtCases.CourtCase
   alias RouteplannerWeb.Authentication
 
+  # TODO: organize this so less data is transferred over the wire
+
   use RouteplannerWeb, :live_view
 
   @days_filter 30
 
   def fetch_cases(days) do
     # TODO: use eastern timezone
+    # TODO: filter and sort in the database
     CourtCases.since_n_days(days)
     |> Enum.sort_by(&(&1.plaintiff))
+    |> Enum.filter(fn c -> not c.visited end)
+    |> Enum.filter(fn c -> c.status == "Active" end)
+  end
+
+  def get_cases(cases, hidden) do
+    cases
+    |> Enum.filter(fn c -> not MapSet.member?(hidden, c.case_id) end)
   end
 
   def sum_drive_times(route) do
@@ -31,18 +41,30 @@ defmodule RouteplannerWeb.Live.Planner do
     |> (fn t -> Map.put(route, :total_time, t) end).()
   end
 
-  def fetch_routes() do
+  def cases_in_timeframe(route, case_ids) do
+    route.cases
+    |> Enum.filter(fn c -> Enum.member?(case_ids, c) end)
+    |> length
+    |> (fn l -> Map.put(route, :cases_shown, l) end).()
+  end
+
+  def fetch_routes(cases) do
+    case_ids = cases |> Enum.map(&(&1.case_id))
     Routeplanner.Routes.list()
     |> Enum.map(&sum_drive_times/1)
+    |> Enum.map(fn r -> cases_in_timeframe(r, case_ids) end)
   end
 
   def mount(_params, _session, socket) do
+    hidden_cases = MapSet.new()
     cases = fetch_cases(@days_filter)
     # NOTE: authentication should be checked here
     {:ok, assign(socket,
         # route managing
-        routes: fetch_routes(),
+        routes: fetch_routes(cases),
         selected_route: nil,
+        hidden_cases: hidden_cases,
+        hidden_routes: MapSet.new(),
         # route planning
         court_cases: cases,
         selected_cases: [],
@@ -51,11 +73,10 @@ defmodule RouteplannerWeb.Live.Planner do
           days: @days_filter,
         },
         # pager
-        section: :manage,
+        section: :plan,
         map_view: cases,
         map_connect: false,
         # common options
-        gmaps_url: Routes.asset_path(socket, :gmaps),
         current_account: nil,
         # modals
         modal: %{
@@ -81,12 +102,65 @@ defmodule RouteplannerWeb.Live.Planner do
     socket = socket
     |> assign(section: :manage)
     |> assign(selected_route: nil)
-    |> toggle_route(socket.assigns.selected_route)
+    |> toggle_route(name: socket.assigns.selected_route)
     {:noreply, socket}
   end
 
   # Route Management Page
   # ---------------------
+
+  def handle_event("route_visited", %{"name" => name}, socket) do
+    Routeplanner.Routes.toggle_visited!(name)
+    cases = fetch_cases(socket.assigns.filters.days)
+    {:noreply, assign(socket,
+        routes: fetch_routes(socket.assigns.court_cases),
+        court_cases: cases,
+        map_view: cases,
+        map_connect: false,
+      )}
+  end
+
+  def unhide_route(socket, route, name) do
+    cases = MapSet.difference(socket.assigns.hidden_cases, MapSet.new(route.cases))
+    routes = MapSet.delete(socket.assigns.hidden_routes, name)
+    {:noreply, assign(socket,
+        hidden_cases: cases,
+        hidden_routes: routes,
+      )}
+  end
+
+  def hide_route(socket, route, name) do
+    cases = MapSet.union(socket.assigns.hidden_cases, MapSet.new(route.cases))
+    routes = MapSet.put(socket.assigns.hidden_routes, name)
+    {:noreply, assign(socket,
+        hidden_cases: cases,
+        hidden_routes: routes,
+      )}
+  end
+
+  def handle_event("route_hide", %{"name" => name}, socket) do
+    route = Routeplanner.Routes.find(name)
+    case MapSet.member?(socket.assigns.hidden_routes, name) do
+      true -> unhide_route(socket, route, name)
+      false -> hide_route(socket, route, name)
+    end
+  end
+
+  def handle_event("route_trash", %{"name" => name}, socket) do
+    Routeplanner.Routes.toggle_deleted!(name)
+    {:noreply, assign(socket,
+        routes: fetch_routes(socket.assigns.court_cases),
+      )}
+  end
+
+  def handle_event("show_plan_route", _, socket) do
+    {:noreply, assign(socket,
+        modal: %{
+          current: :plan_route,
+          plan_route: %{cs: Routeplanner.Routes.new()},
+        },
+      )}
+  end
 
   def handle_event("show_import_route", _, socket) do
     {:noreply, assign(socket,
@@ -97,15 +171,26 @@ defmodule RouteplannerWeb.Live.Planner do
       )}
   end
 
-  def handle_event("close_import_route", _, socket) do
+  def handle_event("close_modal", _, socket) do
     {:noreply, assign(socket,
         modal: %{current: nil},
       )}
   end
 
-  def handle_event("validate_route", %{"route" => params}, socket) do
-    Logger.warn("route validate: #{inspect(params)}")
+  def cases_str_to_list(cases) do
+    cases
+    |> String.split("\n")
+    |> Enum.map(&String.trim/1)
+    |> Enum.filter(&(String.length(&1) > 0))
+  end
+
+  # TODO: newlines are removed in case id input
+  def handle_event("validate_route", %{"route" => route}, socket) do
     # nicer assign statement
+    params = %{
+      name: route["name"],
+      cases: cases_str_to_list(route["cases"]),
+    }
     {:noreply, assign(socket,
         modal: %{
           current: :import_route,
@@ -114,19 +199,30 @@ defmodule RouteplannerWeb.Live.Planner do
       )}
   end
 
-  def handle_event("import_route", %{"cases" => cases, "name" => name}, socket) do
-    name = String.trim(name)
-    cases = cases
-    |> String.split("\n")
-    |> Enum.map(&String.trim/1)
-    |> Enum.filter(&(String.length(&1) > 0))
+  def handle_event("import_route", %{"route" => route}, socket) do
+    name = String.trim(route["name"])
+    cases = cases_str_to_list(route["cases"])
 
-    Logger.warn("import route #{inspect(cases)}, #{inspect(name)}")
-    # {:noreply, assign(socket, modal: nil)}
-    {:noreply, socket}
+    case Routeplanner.Routes.add_external(name, cases) do
+      {:ok, _} ->
+        {:noreply, assign(socket,
+            modal: %{current: nil, import_route: %{cs: nil}},
+            routes: fetch_routes(socket.assigns.court_cases),
+          )}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket,
+            modal: %{
+              current: :import_route,
+              import_route: %{cs: changeset},
+            },
+          )}
+    end
   end
 
-  defp toggle_route(socket, name) do
+  defp toggle_route(socket, opts) do
+    # TODO: damn this is so ugly
+    name = Keyword.get(opts, :name, Keyword.get(opts, :route, %{name: nil}).name)
     # if there's no route to show fall back on all cases
     if is_nil(name) or socket.assigns.selected_route == name do
       socket
@@ -135,7 +231,8 @@ defmodule RouteplannerWeb.Live.Planner do
       |> assign(map_view: socket.assigns.court_cases)
     else
       # TODO: do table join
-      cases = Routeplanner.Routes.find(name).cases
+      route = Keyword.get(opts, :route, Routeplanner.Routes.find(name))
+      cases = route.cases
       |> Enum.map(&CourtCases.by_id/1)
 
       assign(socket,
@@ -147,7 +244,13 @@ defmodule RouteplannerWeb.Live.Planner do
   end
 
   def handle_event("show_route", %{"name" => name}, socket) do
-    {:noreply, toggle_route(socket, name)}
+    route = Routeplanner.Routes.find(name)
+    is_hidden = MapSet.member?(socket.assigns.hidden_routes, name)
+    # TODO: replace many is_nil checks with !!
+    case {is_hidden, !!route.deleted} do
+      {false, false} -> {:noreply, toggle_route(socket, route: route)}
+      _ -> {:noreply, socket}
+    end
   end
 
   # Route Planning Page

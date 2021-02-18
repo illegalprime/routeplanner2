@@ -33,50 +33,58 @@ window.markers = [];
 // This example creates a simple polygon representing the Bermuda Triangle.
 window.initMap = function() {
     // init the map
-    map = new google.maps.Map(document.getElementById("map"), {
+    const mapEl = document.getElementById("map");
+    map = new google.maps.Map(mapEl, {
         zoom: 11,
         center: { lat: 42.33735813662984, lng: -71.18956410933751 },
         clickableIcons: false,
     });
-    // Add a listener for the click event
-    map.addListener("click", addLatLng);
-    const clearPoly = () => {
-        poly.setMap(null);
-        poly = undefined;
-        polyHistory = [];
-        refresh_selection();
-    };
-    const undoPoly = () => {
-        if (!poly || !polyHistory.length) return;
-        const idxUndo = polyHistory.pop();
-        if (polyHistory.length) {
-            // undo one point
-            poly.getPath().removeAt(idxUndo);
+    if (mapEl.dataset.editable !== "no") {
+        // Add a listener for the click event
+        map.addListener("click", addLatLng);
+        const clearPoly = () => {
+            poly.setMap(null);
+            poly = undefined;
+            polyHistory = [];
             refresh_selection();
-        }
-        else {
-            // if this is the last vertex just clear it
-            clearPoly();
-        }
-    };
-    document.getElementById("clear-polygon-btn").addEventListener("click", clearPoly);
-    document.getElementById("undo-polygon-btn").addEventListener("click", undoPoly);
-    // create a marker from the canvass location
-    startLoc = new google.maps.Marker({
-        position: {
-            lat: 42.2986649,
-            lng: -71.1169668,
-        },
-        icon: {
-            path: startSvg,
-            fillColor: "purple",
-            fillOpacity: 0.8,
-            strokeWeight: 0,
-            rotation: 0,
-            scale: 1,
-        },
-        map: map,
-    });
+        };
+        const undoPoly = () => {
+            if (!poly || !polyHistory.length) return;
+            const idxUndo = polyHistory.pop();
+            if (polyHistory.length) {
+                // undo one point
+                poly.getPath().removeAt(idxUndo);
+                refresh_selection();
+            }
+            else {
+                // if this is the last vertex just clear it
+                clearPoly();
+            }
+        };
+        document.getElementById("clear-polygon-btn").addEventListener("click", clearPoly);
+        document.getElementById("undo-polygon-btn").addEventListener("click", undoPoly);
+    }
+    if (mapEl.dataset.loadMarkers) {
+        refresh_markers(document.getElementById(mapEl.dataset.loadMarkers));
+    }
+    else {
+        // create a marker from the canvass location
+        startLoc = new google.maps.Marker({
+            position: {
+                lat: 42.2986649,
+                lng: -71.1169668,
+            },
+            icon: {
+                path: startSvg,
+                fillColor: "purple",
+                fillOpacity: 0.8,
+                strokeWeight: 0,
+                rotation: 0,
+                scale: 1,
+            },
+            map: map,
+        });
+    }
     // map load call backs
     for (const f of onMapLoad) {
         f(map);
@@ -161,12 +169,27 @@ function refresh_markers(table) {
     const cases = Array(...table.getElementsByTagName('tr'));
     const max_days = parseInt(table.dataset.daysFilter);
     const now = Date.now();
-    cases.forEach(court_case => {
+    cases.forEach((court_case, idx) => {
+        // ignore table headers
+        if (court_case.dataset.ignore) return;
         // color marker based on how old it is
         const date = Date.parse(court_case.dataset.date);
         const diff = (now - date) / (1000 * 3600 * 24);
         const intensity = parseInt(255 * (1 - (diff / max_days))).toString(16);
         const color = `#${intensity}0000`;
+
+        let markerSize = 3;
+        let label = undefined;
+
+        if (table.dataset.zoom) {
+            markerSize = 8;
+            label = {
+                color: "#ffffff",
+                fontWeight: "bold",
+                fontSize: "15px",
+                text: idx.toString(),
+            };
+        }
 
         // make the new marker
         const marker = new google.maps.Marker({
@@ -174,12 +197,13 @@ function refresh_markers(table) {
                 lat: parseFloat(court_case.dataset.lat),
                 lng: parseFloat(court_case.dataset.lng),
             },
+            label,
             icon: {
                 path: google.maps.SymbolPath.CIRCLE,
                 fillColor: color,
                 fillOpacity: 1,
                 strokeColor: color,
-                scale: 3,
+                scale: markerSize,
             },
             map,
             title: [
@@ -201,6 +225,12 @@ function refresh_markers(table) {
             strokeWeight: 2,
         });
         routePath.setMap(map);
+    }
+
+    if (table.dataset.zoom) {
+        const bounds = new google.maps.LatLngBounds();
+        markers.forEach(m => bounds.extend(m.getPosition()));
+        map.fitBounds(bounds);
     }
 }
 

@@ -63,6 +63,8 @@ defmodule RouteplannerWeb.Router do
     pipe_through [:browser, :guardian, :browser_auth]
 
     live "/", Live.Planner
+    get "/route/:route", RoutePageController, :show
+
     resources "/profile", ProfileController, only: [:show], singleton: true
     delete "/logout", LoginController, :logout
   end
@@ -97,7 +99,7 @@ defmodule RouteplannerWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/" do
-      pipe_through :browser
+      pipe_through [:browser, :guardian, :browser_auth]
       live_dashboard "/dashboard", metrics: RouteplannerWeb.Telemetry
     end
   end

@@ -275,6 +275,13 @@ body {
 }
 
 #show-route-page {
+  .route-header {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
   #route-stops {
     tr:nth-child(even) {
       background-color: #f2f2f2;
@@ -312,7 +319,7 @@ body {
 
   #route-stops {
     tr td {
-      font-size: 1.3rem;
+      font-size: 1.5rem;
       padding-top: 0;
       padding-bottom: 0;
     }

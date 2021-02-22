@@ -10,7 +10,8 @@ defmodule RouteplannerWeb.RoutePageView do
   end
 
   def qr_code(text) do
-    QRCode.create(text)
+    text
+    |> QRCode.create(:high)
     |> Result.and_then(&QRCode.Svg.to_base64/1)
   end
 end

@@ -9,7 +9,7 @@
     </div>
 </div>
 
-<div class="main-ui">
+<div class="main-ui" id="main-ui" phx-hook="OnLoad">
     <div class="map-view" phx-update="ignore">
         <div class="map-container"
              style="height:100%;" id="map">
@@ -25,7 +25,7 @@
     <div class="court-cases">
         <div class="case-filters">
             <button class="button-outline">
-                <%= length @selected_cases %> / <%= length @court_cases %> Selected
+                <%= MapSet.size @selected_cases %> / <%= length @court_cases %> Selected
             </button>
             <button phx-click="toggle_selected">
                 <%= if @filters.selected do %>
@@ -34,12 +34,13 @@
                     Show Selected
                 <% end %>
             </button>
-            <form id="start-loc">
-                <select name="canvass-start">
-                    <option value="nowhere">From Anywhere</option>
-                    <option value="forest-hills">From Forest Hills</option>
-                </select>
-            </form>
+            <!-- FEATURE: starting location for routes -->
+            <!-- <form id="start-loc"> -->
+            <!-- <select name="canvass-start"> -->
+            <!-- <option value="nowhere">From Anywhere</option> -->
+            <!-- <option value="forest-hills">From Forest Hills</option> -->
+            <!-- </select> -->
+            <!-- </form> -->
             <form phx-change="filter_days" id="filter_days">
                 <select name="days-filter">
                     <option value="1">Past Day</option>
@@ -58,7 +59,7 @@
         <table id="all-cases-table">
             <tr><th>Landlord</th> <th>Address</th></tr>
             <%= for row <- @court_cases do %>
-                <% selected = Enum.member?(@selected_cases, row.case_id) %>
+                <% selected = MapSet.member?(@selected_cases, row.case_id) %>
                 <%= if not @filters.selected or selected do %>
                     <tr class="court-case <%= if selected do %>selected<% end %>">
                         <td><%= row.plaintiff %></td>
@@ -90,15 +91,24 @@
                             <%= route.name %>
                         </td>
                         <td class="edit-route">
+                            <%= if !route.deleted do %>
                             <i phx-click="route_visited"
                                phx-value-name="<%= route.name %>"
                                class="fas fa-check <%= visited %>"></i>
+                            <% end %>
+
+                            <%= if !route.visited and !route.deleted do %>
                             <i phx-click="route_hide"
                                phx-value-name="<%= route.name %>"
                                class="fas fa-eye-slash <%= hidden %>"></i>
+                            <% end %>
+
+                            <%= if !route.visited do %>
                             <i phx-click="route_trash"
                                phx-value-name="<%= route.name %>"
                                class="fas fa-trash <%= deleted %>"></i>
+                            <% end %>
+
                             <a target="_blank"
                                href="<%= Routes.route_page_path(@socket, :show, route.name) %>"
                                class="fas fa-external-link-alt"></a>
@@ -141,7 +151,7 @@
 
         <div class="route-controls">
             <button class="button-outline">
-                <%= length @selected_cases %> / <%= length @court_cases %> Selected
+                <%= MapSet.size @selected_cases %> / <%= length @court_cases %> Selected
             </button>
             <button phx-click="show_import_route">Import Route</button>
         </div>
@@ -162,7 +172,7 @@
         <div class="modal-header"> <h2>Import a Route!</h2> </div>
 
         <%= form_for @modal.import_route.cs, "#", [
-            phx_change: :validate_route,
+            phx_change: :validate_import_route,
             phx_submit: :import_route,
             class: "modal-body import-route-form",
         ], fn f -> %>
@@ -190,7 +200,6 @@
             <div class="modal-header"><h2>Plan a Route!</h2></div>
 
             <%= form_for @modal.plan_route.cs, "#", [
-                phx_change: :validate_route,
                 phx_submit: :plan_route,
                 class: "modal-body plan-route-form",
             ], fn f -> %>
@@ -203,30 +212,6 @@
         </div>
     </div>
 <% end %>
-
-<!-- Hook for what data to display on the map. -->
-<!-- TODO: there's a better way to send data than the dom? -->
-<table
-    style="display:none;"
-    phx-hook="MapDisplay"
-    id="map-display"
-    data-days-filter="<%= @filters.days %>"
-    data-connect="<%= @map_connect %>"
->
-    <%= for row <- get_cases(@map_view, @hidden_cases) do %>
-        <tr
-            data-case-id="<%= row.case_id %>"
-            data-lat="<%= row.latitude %>"
-            data-lng="<%= row.longitude %>"
-            data-name="<%= row.name %>"
-            data-landlord="<%= row.plaintiff %>"
-            data-date="<%= row.file_date %>"
-            data-street="<%= row.street %>"
-            data-city="<%= row.city %>"
-        >
-        </tr>
-    <% end %>
-</table>
 
 <br/>
 <section class="container">

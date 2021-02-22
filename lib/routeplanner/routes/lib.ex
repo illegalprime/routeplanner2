@@ -30,6 +30,12 @@ defmodule Routeplanner.Routes do
     |> Repo.insert()
   end
 
+  def add(params) do
+    %Route{}
+    |> Route.changeset(params)
+    |> Repo.insert()
+  end
+
   def list() do
     # TODO: do sorting in database
     Repo.all(Route)

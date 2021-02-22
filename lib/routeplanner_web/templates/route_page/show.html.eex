@@ -1,19 +1,15 @@
 <section id="show-route-page">
-    <h1><%= @route.name %></h1>
+    <span class="route-header">
+        <h1><%= @route.name %> </h1>
+        <h3>
+            <%= @route.cases |> length() %> people,
+            <%= @route.drive_times |> Enum.sum() |> to_clock() %> min.
+        </h3>
+    </span>
     <br/>
-    <div class="map-container"
-         phx-update="ignore"
-         data-load-markers="route-stops"
-         data-editable="no"
-         style="height:600px;width:100%;" id="map">
-    </div>
+    <div data-editable="no" style="height:600px;width:100%;" id="map"></div>
     <br/>
-    <table
-        id="route-stops"
-        data-connect="true"
-        data-zoom="true"
-        data-number="true"
-    >
+    <table id="route-stops">
         <tr data-ignore="true">
             <th>#</th>
             <th>Name</th>
@@ -24,15 +20,7 @@
             <th>Drive</th>
         </tr>
         <%= for {stop, i} <- @route.cases |> Enum.with_index do %>
-            <tr
-                data-lat="<%= stop.latitude %>"
-                data-lng="<%= stop.longitude %>"
-                data-name="<%= stop.name %>"
-                data-landlord="<%= stop.plaintiff %>"
-                data-date="<%= stop.file_date %>"
-                data-street="<%= stop.street %>"
-                data-city="<%= stop.city %>"
-            >
+            <tr>
                 <td><%= i + 1 %></td>
                 <td><%= stop.name %></td>
                 <td><%= stop.plaintiff %></td>
@@ -56,6 +44,16 @@
         <img class="debrief-qr" src="data:image/svg+xml;base64,<%= qr_code(@form_link) %>" />
     </div>
 
+    <script>
+     const MAP_POINTS = <%= raw(@cases_json) %>;
+     window.onMapLoad = () => {
+         refresh_route({
+             points: MAP_POINTS,
+             zoom: true,
+             enumerate: true,
+         });
+     };
+    </script>
     <script src="<%= Routes.asset_path(@conn, :gmaps) %>" async></script>
 </section>
 

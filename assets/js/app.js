@@ -21,22 +21,22 @@ let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("
 
 const startSvg = "M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z";
 
-let poly;
-let map;
 let markerHook;
-let routePath;
 let startLoc;
-let onMapLoad = [];
-let polyHistory = [];
-window.markers = [];
+window.markers = {};
 
 // This example creates a simple polygon representing the Bermuda Triangle.
+let poly;
+let polyHistory = [];
 window.initMap = function() {
     // init the map
     const mapEl = document.getElementById("map");
-    map = new google.maps.Map(mapEl, {
-        zoom: 11,
-        center: { lat: 42.33735813662984, lng: -71.18956410933751 },
+    window.map = new google.maps.Map(mapEl, {
+        zoom: 12,
+        center: {
+            lat: 42.32187556128396,
+            lng: -71.10476338912267,
+        },
         clickableIcons: false,
     });
     if (mapEl.dataset.editable !== "no") {
@@ -64,52 +64,30 @@ window.initMap = function() {
         document.getElementById("clear-polygon-btn").addEventListener("click", clearPoly);
         document.getElementById("undo-polygon-btn").addEventListener("click", undoPoly);
     }
-    if (mapEl.dataset.loadMarkers) {
-        refresh_markers(document.getElementById(mapEl.dataset.loadMarkers));
-    }
-    else {
-        // create a marker from the canvass location
-        startLoc = new google.maps.Marker({
-            position: {
-                lat: 42.2986649,
-                lng: -71.1169668,
-            },
-            icon: {
-                path: startSvg,
-                fillColor: "purple",
-                fillOpacity: 0.8,
-                strokeWeight: 0,
-                rotation: 0,
-                scale: 1,
-            },
-            map: map,
-        });
-    }
-    // map load call backs
-    for (const f of onMapLoad) {
-        f(map);
-    }
-    onMapLoad = true;
-};
-
-let debounce_memo = "";
-function refresh_selection() {
-    if (!google.maps.geometry || !markerHook) {
-        return;
-    }
-    const containsLocation = google.maps.geometry.poly.containsLocation;
-    const inside = markers.filter(marker => {
-        return poly && containsLocation(marker.getPosition(), poly);
-    }).map(marker => {
-        return marker.case_id;
+    // create a marker from the canvass location
+    // TODO: implement changing this and planning around it
+    startLoc = new google.maps.Marker({
+        position: {
+            lat: 42.2986649,
+            lng: -71.1169668,
+        },
+        icon: {
+            path: startSvg,
+            fillColor: "purple",
+            fillOpacity: 0.8,
+            strokeWeight: 0,
+            rotation: 0,
+            scale: 1,
+        },
+        map: map,
     });
-    const memo = inside.join();
-    if (memo == debounce_memo) {
-        return;
+    // send message we're ready for map data
+    if (markerHook) markerHook.pushEvent("map_init", {});
+    // if there's an event run it
+    if (window.onMapLoad) {
+        window.onMapLoad();
     }
-    debounce_memo = memo;
-    markerHook.pushEvent("selected_cases", { cases: inside });
-}
+};
 
 function addLatLng(event) {
     const vertex = event.latLng;
@@ -155,101 +133,165 @@ function addLatLng(event) {
     }
 }
 
-function refresh_markers(table) {
-    // remove old markers
-    for (const marker of markers) {
-        marker.setMap(null);
+let debounce_memo = "";
+function refresh_selection() {
+    if (!google.maps.geometry || !markerHook) {
+        return;
     }
-    markers = [];
-    // remove old route
-    if (routePath) routePath.setMap(null);
-    routePath = undefined;
-
-    // loop through new data set
-    const cases = Array(...table.getElementsByTagName('tr'));
-    const max_days = parseInt(table.dataset.daysFilter);
-    const now = Date.now();
-    cases.forEach((court_case, idx) => {
-        // ignore table headers
-        if (court_case.dataset.ignore) return;
-        // color marker based on how old it is
-        const date = Date.parse(court_case.dataset.date);
-        const diff = (now - date) / (1000 * 3600 * 24);
-        const intensity = parseInt(255 * (1 - (diff / max_days))).toString(16);
-        const color = `#${intensity}0000`;
-
-        let markerSize = 3;
-        let label = undefined;
-
-        if (table.dataset.zoom) {
-            markerSize = 8;
-            label = {
-                color: "#ffffff",
-                fontWeight: "bold",
-                fontSize: "15px",
-                text: idx.toString(),
-            };
-        }
-
-        // make the new marker
-        const marker = new google.maps.Marker({
-            position: {
-                lat: parseFloat(court_case.dataset.lat),
-                lng: parseFloat(court_case.dataset.lng),
-            },
-            label,
-            icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                fillColor: color,
-                fillOpacity: 1,
-                strokeColor: color,
-                scale: markerSize,
-            },
-            map,
-            title: [
-                `Landlord: ${court_case.dataset.landlord}`,
-                `Date: ${court_case.dataset.date}`,
-                `Address: ${court_case.dataset.street}, ${court_case.dataset.city}`,
-            ].join('\n')
-        });
-        marker.case_id = court_case.dataset.caseId;
-        markers.push(marker);
+    const containsLocation = google.maps.geometry.poly.containsLocation;
+    const inside = Object.values(markers).filter(marker => {
+        return !hidden.has(marker.case_id);
+    }).filter(marker => {
+        return poly && containsLocation(marker.getPosition(), poly);
+    }).map(marker => {
+        return marker.case_id;
     });
+    const memo = inside.join();
+    if (memo == debounce_memo) {
+        return;
+    }
+    debounce_memo = memo;
+    markerHook.pushEvent("selected_cases", { cases: inside });
+}
 
-    if (table.dataset.connect === "true") {
-        routePath = new google.maps.Polyline({
-            path: markers.map(m => m.position),
-            geodesic: true,
-            strokeColor: "#FF0000",
-            strokeOpacity: 1.0,
-            strokeWeight: 2,
-        });
-        routePath.setMap(map);
+function marker_icon(file_date, opts) {
+    // color marker based on how old it is
+    const now = Date.now();
+    const date = Date.parse(file_date);
+    const diff = (now - date) / (1000 * 3600 * 24);
+    const intensity = parseInt(255 * (1 - (diff / opts.days))).toString(16);
+    const color = `#${intensity}0000`;
+    return {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: color,
+        scale: opts.enumerate ? 8 : 3,
+    };
+}
+
+function marker_label(opts, idx) {
+    if (!opts.enumerate) return undefined;
+    return {
+        color: "#ffffff",
+        fontWeight: "bold",
+        fontSize: "15px",
+        text: (idx + 1).toString(),
+    };
+}
+
+function add_marker(court_case, opts, idx) {
+    // make the new marker
+    const icon = marker_icon(court_case.file_date, opts);
+    const label = marker_label(opts, idx);
+    const marker = new google.maps.Marker({
+        position: {
+            lat: parseFloat(court_case.latitude),
+            lng: parseFloat(court_case.longitude),
+        },
+        label,
+        icon,
+        title: [
+            `Landlord: ${court_case.plaintiff}`,
+            `Date: ${court_case.file_date}`,
+            `Address: ${court_case.street}, ${court_case.city}`,
+        ].join('\n')
+    });
+    marker.case_id = court_case.case_id;
+    marker.file_date = court_case.file_date;
+    return marker;
+}
+
+let map_opts = {};
+let hidden = new Set();
+function refresh_markers(scatter) {
+    // get new opts if available
+    let refresh_colors = false;
+    if (scatter.zoom !== undefined) map_opts.zoom = scatter.zoom;
+    if (scatter.days !== undefined) {
+        if (map_opts.days !== undefined) refresh_colors = true;
+        map_opts.days = scatter.days;
     }
 
-    if (table.dataset.zoom) {
-        const bounds = new google.maps.LatLngBounds();
-        markers.forEach(m => bounds.extend(m.getPosition()));
-        map.fitBounds(bounds);
+    // find point diff
+    const points = scatter.points;
+    const scatter_set = new Set(points.map(c => c.case_id));
+    const to_add = points.filter(c => !markers[c.case_id]);
+    const to_del = Object.keys(markers).filter(c => !scatter_set.has(c));
+
+    // create all markers first
+    for (const point of to_add) {
+        markers[point.case_id] = add_marker(point, map_opts);
+    }
+    // if the days filter changed, reset colors on everything
+    if (refresh_colors) {
+        for (const marker of Object.values(markers)) {
+            marker.setIcon(marker_icon(marker.file_date, map_opts));
+        }
+    }
+
+    // now show them and delete old ones quickly
+    const not_hidden = to_add.filter(c => !hidden.has(c.case_id));
+    for (const point of not_hidden) {
+        markers[point.case_id].setMap(map);
+    }
+    for (const case_id of to_del) {
+        markers[case_id].setMap(null);
+        delete markers[case_id];
     }
 }
 
+function hidden_markers(hide_req) {
+    const now_hidden = new Set(hide_req.ids);
+    const to_hide = hide_req.ids.filter(id => !hidden.has(id));
+    const to_show = [...hidden].filter(id => !now_hidden.has(id));
+    hidden = now_hidden;
+
+    for (const id of to_hide) {
+        markers[id].setMap(null);
+    }
+    for (const id of to_show) {
+        markers[id].setMap(map);
+    }
+}
+
+let currentRoute = [];
+let routePath = undefined;
+function refresh_route(route) {
+    const opts = { enumerate: true, ...map_opts };
+    currentRoute.forEach(r => r.setMap(null));
+    currentRoute = route.points.map((p, i) => add_marker(p, opts, i));
+    currentRoute.forEach(m => m.setMap(map));
+
+    if (routePath) routePath.setMap(null);
+    routePath = new google.maps.Polyline({
+        path: currentRoute.map(m => m.position),
+        geodesic: true,
+        strokeColor: "#FF0000",
+        strokeOpacity: 1.0,
+        strokeWeight: 2,
+    });
+    routePath.setMap(map);
+
+    // zoom to just show the markers if needed
+    if (route.zoom) {
+        const bounds = new google.maps.LatLngBounds();
+        currentRoute.forEach(m => bounds.extend(m.getPosition()));
+        map.fitBounds(bounds);
+    }
+}
+window.refresh_route = refresh_route;
+
 const Hooks = {
-    MapDisplay: {
+    OnLoad: {
         mounted() {
+            this.handleEvent('map-scatter', refresh_markers);
+            this.handleEvent('map-route', refresh_route);
+            this.handleEvent('map-hide', hidden_markers);
+            if (map) this.pushEvent("map_init", {});
             markerHook = this;
-            const table = this.el;
-            if (onMapLoad !== true) {
-                onMapLoad.push(() => refresh_markers(table));
-            }
-            else {
-                refresh_markers(table);
-            }
-        },
-        updated() {
-            refresh_markers(this.el);
-        },
-    },
+        }
+    }
 };
 
 let liveSocket = new LiveSocket("/live", Socket, {

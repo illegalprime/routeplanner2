@@ -62,4 +62,22 @@ defmodule Routeplanner.CourtCases.CourtCase do
     |> (fn [month, day, year] -> Date.new(year, month, day) end).()
     %{ attrs | "file_date" => date }
   end
+
+  # TODO: better JSON encoding
+  def to_encodable(court_case) do
+    %{
+      case_id: court_case.case_id,
+      name: court_case.name,
+      plaintiff: court_case.plaintiff,
+
+      longitude: court_case.longitude,
+      latitude: court_case.latitude,
+      street: court_case.street,
+      city: court_case.city,
+
+      file_date: court_case.file_date,
+
+      visited: court_case.visited,
+    }
+  end
 end

@@ -9,7 +9,7 @@ let
   nodejs = nodejs-10_x;
   postgresql = postgresql_10;
 
-  tspbin = callPackage ../tsp {};
+  tspbin = callPackage ./tsp {};
 in
 
 mkShell {

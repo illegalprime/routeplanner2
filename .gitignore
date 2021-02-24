@@ -36,3 +36,7 @@ npm-debug.log
 /db/
 
 /secret/
+
+result
+
+.R*

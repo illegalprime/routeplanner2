@@ -10,7 +10,7 @@
     <div data-editable="no" style="height:600px;width:100%;" id="map"></div>
     <br/>
     <table id="route-stops">
-        <tr data-ignore="true">
+        <tr>
             <th>#</th>
             <th>Name</th>
             <th>Landlord</th>
@@ -20,7 +20,9 @@
             <th>Drive</th>
         </tr>
         <%= for {stop, i} <- @route.cases |> Enum.with_index do %>
-            <tr>
+            <tr
+                data-id="<%= stop.case_id %>"
+            >
                 <td><%= i + 1 %></td>
                 <td><%= stop.name %></td>
                 <td><%= stop.plaintiff %></td>

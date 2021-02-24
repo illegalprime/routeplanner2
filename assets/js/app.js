@@ -265,7 +265,7 @@ function refresh_route(route) {
 
     if (routePath) routePath.setMap(null);
     routePath = new google.maps.Polyline({
-        path: currentRoute.concat(currentRoute[0]).map(m => m.position),
+        path: currentRoute.concat(currentRoute[0] || []).map(m => m.position),
         geodesic: true,
         strokeColor: "#FF0000",
         strokeOpacity: 1.0,

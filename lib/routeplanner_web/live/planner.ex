@@ -276,6 +276,7 @@ defmodule RouteplannerWeb.Live.Planner do
 
     socket
     |> assign(court_cases: cases)
+    |> assign(routes: fetch_routes(cases))
     |> push_cases("map-scatter", cases, %{days: days})
     |> noreply()
   end

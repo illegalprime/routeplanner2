@@ -20,6 +20,16 @@ in
         proxyWebsockets = true;
       };
     };
+
     networking.firewall.allowedTCPPorts = [ 80 443 cfg.port ];
+
+    services.cloudflare-dyndns.records = [
+      {
+        type = "A";
+        name = cfg.virtualhost;
+        content = "@ip@";
+        proxied = false;
+      }
+    ];
   };
 }

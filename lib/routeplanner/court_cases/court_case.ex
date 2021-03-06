@@ -34,8 +34,8 @@ defmodule Routeplanner.CourtCases.CourtCase do
   def new(court_case, attrs) do
     court_case
     |> changeset(convert_date(attrs))
-    |> put_change(:visited, false)
-    |> put_change(:active, false)
+    |> put_change(:visited, false) # TODO: change to database default
+    |> put_change(:active, false) # TODO: change to database default
   end
 
   def changeset(court_case, attrs) do
@@ -48,7 +48,7 @@ defmodule Routeplanner.CourtCases.CourtCase do
     ])
     |> validate_required([
       :case_id, :name, :plaintiff,
-      :longitude, :latitude, :address, :street, :city, :state, :zip,
+      :longitude, :latitude, :address, :street, :city, :state,
       :status, :judgement, :type, :file_date, :next_event_date, :docket,
     ])
     |> unique_constraint(:case_id)

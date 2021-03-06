@@ -7,7 +7,7 @@ defmodule Routeplanner.CourtCases do
     %CourtCase{}
     |> CourtCase.new(params)
     |> Repo.insert!(
-      on_conflict: {:replace_all_except, [:id]},
+      on_conflict: {:replace_all_except, [:id, :visited]},
       conflict_target: :case_id,
     )
   end

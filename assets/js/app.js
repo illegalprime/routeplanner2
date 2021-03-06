@@ -248,10 +248,10 @@ function hidden_markers(hide_req) {
     hidden = now_hidden;
 
     for (const id of to_hide) {
-        markers[id].setMap(null);
+        if (markers[id]) markers[id].setMap(null);
     }
     for (const id of to_show) {
-        markers[id].setMap(map);
+        if (markers[id]) markers[id].setMap(map);
     }
 }
 

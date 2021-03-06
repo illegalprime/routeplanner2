@@ -16,7 +16,7 @@ defmodule RouteplannerWeb.Live.Planner do
 
   use RouteplannerWeb, :live_view
 
-  @days_filter 30
+  @days_filter 21
 
   def fetch_cases(days) do
     # TODO: use eastern timezone

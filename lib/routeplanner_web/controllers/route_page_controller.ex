@@ -17,6 +17,7 @@ defmodule RouteplannerWeb.RoutePageController do
       route: route,
       cases_json: cases_json,
       form_link: "https://forms.gle/qy2g4XFEs3dL1BjTA",
+      title: route.name,
     )
   end
 end

@@ -31,5 +31,6 @@ mkShell {
   shellHook = ''
     export PGDATA="$PWD/db"
     export TSP_BIN_PATH='${tspbin}/bin/solve-tsp'
+    export LOCALE_ARCHIVE=/usr/lib/locale/locale-archive
   '';
 }

@@ -16,6 +16,8 @@ config :routeplanner, RouteplannerWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :esbuild, path: System.get_env("MIX_ESBUILD_PATH")
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key

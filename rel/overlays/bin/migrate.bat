@@ -1,0 +1,1 @@
+call "%~dp0\routeplanner" eval Routeplanner.Release.migrate

@@ -92,26 +92,35 @@
                         </td>
                         <td class="edit-route">
                             <%= if !route.deleted do %>
-                            <i phx-click="route_visited"
+                            <a phx-click="route_visited"
                                phx-value-name="<%= route.name %>"
-                               class="fas fa-check <%= visited %>"></i>
+                               class="fas fa-check <%= visited %>">
+                                <%= FontAwesome.icon("check", type: "solid") %>
+                            </a>
                             <% end %>
 
                             <%= if !route.visited and !route.deleted do %>
-                            <i phx-click="route_hide"
+                            <a phx-click="route_hide"
                                phx-value-name="<%= route.name %>"
-                               class="fas fa-eye-slash <%= hidden %>"></i>
+                               class="fas fa-eye-slash <%= hidden %>">
+                                <%= FontAwesome.icon("eye-slash", type: "solid") %>
+                            </a>
                             <% end %>
 
                             <%= if !route.visited do %>
-                            <i phx-click="route_trash"
+                            <a phx-click="route_trash"
                                phx-value-name="<%= route.name %>"
-                               class="fas fa-trash <%= deleted %>"></i>
+                               class="fas fa-trash <%= deleted %>">
+                                <%= FontAwesome.icon("trash", type: "solid") %>
+                            </a>
                             <% end %>
 
                             <a target="_blank"
                                href="<%= Routes.route_page_path(@socket, :show, route.name) %>"
-                               class="fas fa-external-link-alt"></a>
+                               class="fas fa-external-link-alt">
+                                <%= FontAwesome.icon("external-link-alt", type: "solid") %>
+                            </a>
+
                             <div class="tooltips">
                                 <span class="tooltip visited">
                                     <%= if route.visited do %>

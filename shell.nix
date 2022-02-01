@@ -5,8 +5,7 @@ with pkgs;
 let
   inherit (lib) optional optionals;
 
-  elixir = beam.packages.erlangR21.elixir_1_8;
-  nodejs = nodejs-10_x;
+  elixir = elixir_1_12;
   postgresql = postgresql_10;
 
   tspbin = callPackage ./tsp {};
@@ -15,22 +14,26 @@ in
 mkShell {
   buildInputs = [
     elixir
-    nodejs
     git
     postgresql
     tspbin
   ]
-  ++ optional stdenv.isLinux inotify-tools # For file_system on Linux.
+  # For file_system on Linux.
+  ++ optional stdenv.isLinux inotify-tools
+  # For file_system on macOS.
   ++ optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks; [
-    # For file_system on macOS.
     CoreFoundation
     CoreServices
   ]);
+
+  LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
+  LANG = "en_US.UTF-8";
+  LC_ALL = "en_US.UTF-8";
 
   # Put the PostgreSQL databases in the project diretory.
   shellHook = ''
     export PGDATA="$PWD/db"
     export TSP_BIN_PATH='${tspbin}/bin/solve-tsp'
-    export LOCALE_ARCHIVE=/usr/lib/locale/locale-archive
+    source secret/env
   '';
 }

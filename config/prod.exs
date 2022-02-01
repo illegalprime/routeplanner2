@@ -54,4 +54,5 @@ config :esbuild, path: System.get_env("MIX_ESBUILD_PATH")
 
 # Finally import the config/prod.secret.exs which loads secrets
 # and configuration from environment variables.
-import_config "prod.secret.exs"
+# removing this so we can build w/o secrets
+# import_config "prod.secret.exs"

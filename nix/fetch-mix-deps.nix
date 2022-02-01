@@ -36,8 +36,4 @@ stdenvNoCC.mkDerivation {
   outputHashAlgo = "sha256";
   outputHashMode = "recursive";
   outputHash = sha256;
-
-  impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
-    "DATABASE_URL" "SECRET_KEY_BASE"
-  ];
 }

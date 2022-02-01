@@ -12,6 +12,31 @@ if System.get_env("PHX_SERVER") && System.get_env("RELEASE_NAME") do
   config :routeplanner, RouteplannerWeb.Endpoint, server: true
 end
 
+
+# configure google OAuth
+config :ueberauth, Ueberauth.Strategy.Google.OAuth,
+  client_id: System.get_env("GOOGLE_CLIENT_ID"),
+  client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
+
+# configure bamboo
+config :routeplanner, Routeplanner.Email.Mailer,
+  adapter: Bamboo.SendGridAdapter,
+  api_key: System.get_env("SENDGRID_API_KEY")
+
+config :routeplanner, RouteplannerWeb.Authentication,
+  issuer: "routeplanner",
+  secret_key: System.get_env("GUARDIAN_SECRET_KEY")
+
+config :routeplanner, RouteplannerWeb.AssetController,
+  gmaps_api_key: System.get_env("GMAPS_API_KEY")
+
+config :routeplanner, Routeplanner.GoogleMaps,
+  gmaps_api_key: System.get_env("GMAPS_API_KEY")
+
+config :routeplanner, Routeplanner.TravellingSalesmen,
+  tsp_bin_path: System.get_env("TSP_BIN_PATH")
+
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

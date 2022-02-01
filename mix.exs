@@ -20,7 +20,7 @@ defmodule Routeplanner.MixProject do
   def application do
     [
       mod: {Routeplanner.Application, []},
-      extra_applications: [:logger, :runtime_tools, :os_mon, :ueberauth_google]
+      extra_applications: [:logger, :runtime_tools, :ueberauth_google]
     ]
   end
 

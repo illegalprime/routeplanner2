@@ -18,19 +18,6 @@ config :routeplanner, RouteplannerWeb.Endpoint,
   pubsub_server: Routeplanner.PubSub,
   live_view: [signing_salt: "FmI5-AINE5hA4gDF"]
 
-config :routeplanner, RouteplannerWeb.Authentication,
-  issuer: "routeplanner",
-  secret_key: System.get_env("GUARDIAN_SECRET_KEY")
-
-config :routeplanner, RouteplannerWeb.AssetController,
-  gmaps_api_key: System.get_env("GMAPS_API_KEY")
-
-config :routeplanner, Routeplanner.GoogleMaps,
-  gmaps_api_key: System.get_env("GMAPS_API_KEY")
-
-config :routeplanner, Routeplanner.TravellingSalesmen,
-  tsp_bin_path: System.get_env("TSP_BIN_PATH")
-
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.14.0",
@@ -63,16 +50,6 @@ config :ueberauth, Ueberauth,
       ]
     },
   ]
-
-# configure google OAuth
-config :ueberauth, Ueberauth.Strategy.Google.OAuth,
-  client_id: {System, :get_env, ["GOOGLE_CLIENT_ID"]},
-  client_secret: {System, :get_env, ["GOOGLE_CLIENT_SECRET"]}
-
-# configure bamboo
-config :routeplanner, Routeplanner.Email.Mailer,
-  adapter: Bamboo.SendGridAdapter,
-  api_key: {System, :get_env, ["SENDGRID_API_KEY"]}
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

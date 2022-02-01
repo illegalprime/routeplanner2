@@ -56,8 +56,7 @@ in stdenv.mkDerivation (args // {
   configurePhase = args.configurePhase or ''
     runHook preConfigure
 
-    # TODO: figure out how to use impureEnvVars here
-    source ${../secret/build}
+    mv assets/static priv/
 
     mix deps.compile --no-deps-check --skip-umbrella-children
 

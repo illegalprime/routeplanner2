@@ -15,12 +15,20 @@ let
     elixir = beam.packages.erlangR24.elixir_1_12;
     inherit fetchMixDeps;
   };
+
+  tsp = callPackage ../tsp {};
 in
 buildMix {
   pname = "routeplanner";
   version = "0.5.0";
   mixSha256 = "0hidvkdm5fhp9gl8ln71k5zn50f5g83xpari23qly65gm0hgkmsq";
   src = builtins.fetchGit ../.;
+
+  TSP_BIN_PATH = "${tsp}/bin/solve-tsp";
+
+  propagatedBuildInputs = [
+    tsp
+  ];
 
   impureEnvVars = [
     "DATABASE_URL" "SECRET_KEY_BASE"

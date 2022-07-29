@@ -8,6 +8,7 @@ let
   elixir = elixir_1_12;
   postgresql = postgresql_10;
 
+  pwd = toString ./.;
   tspbin = callPackage ./tsp {};
 in
 
@@ -34,6 +35,6 @@ mkShell {
   shellHook = ''
     export PGDATA="$PWD/db"
     export TSP_BIN_PATH='${tspbin}/bin/solve-tsp'
-    source secret/env
+    source <(sed 's,^,export ,' ${pwd}/../nixops/secrets/routeplanner)
   '';
 }

@@ -1,23 +1,29 @@
-<div class="menu-container">
-    <div class="ui-menu">
-        <a phx-click="menu_plan"
-           class="button button-clear <%= if @section == :plan do %>selected<% end %>"
-        >Plan Routes</a>
-        <a phx-click="menu_manage"
-           class="button button-clear <%= if @section == :manage do %>selected<% end %>"
-        >Manage Routes</a>
-    </div>
-</div>
 
 <div class="main-ui" id="main-ui" phx-hook="OnLoad">
     <div class="map-view" phx-update="ignore">
         <div class="map-container"
              style="height:100%;" id="map">
         </div>
-        <!-- TODO -->
         <div class="map-controls">
             <button id="clear-polygon-btn">Reset</button>
             <button id="undo-polygon-btn">Undo</button>
+        </div>
+    </div>
+
+    <div class="floating-routes-ui">
+    <div class="menu-container">
+        <div class="ui-menu <%= if @section != :hide do %>menu-show<% end %>"
+             >
+            <a phx-click="menu_plan"
+            class="button button-clear <%= if @section == :plan do %>selected<% end %>"
+            >Plan Routes</a>
+            <a phx-click="menu_manage"
+            class="button button-clear <%= if @section == :manage do %>selected<% end %>"
+            >Manage Routes</a>
+            <a phx-click="menu_hide" style="font-size:3rem;"
+            class="button button-clear">
+               <%= if @section == :hide do %> ⊞ <% else %> ‒ <% end %>
+            </a>
         </div>
     </div>
 
@@ -34,7 +40,7 @@
                     Show Selected
                 <% end %>
             </button>
-            <!-- FEATURE: starting location for routes -->
+            <!-- TODO: starting location for routes -->
             <!-- <form id="start-loc"> -->
             <!-- <select name="canvass-start"> -->
             <!-- <option value="nowhere">From Anywhere</option> -->
@@ -167,6 +173,8 @@
     </div>
     <% end %>
 
+    </div>
+
     <script src="<%= Routes.asset_path(@socket, :gmaps) %>" async></script>
 </div>
 
@@ -221,9 +229,3 @@
         </div>
     </div>
 <% end %>
-
-<br/>
-<section class="container">
-    <p class="alert alert-info" role="alert"><%= live_flash(@flash, :info) %></p>
-    <p class="alert alert-danger" role="alert"><%= live_flash(@flash, :error) %></p>
-</section>

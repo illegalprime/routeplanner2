@@ -113,6 +113,17 @@ defmodule RouteplannerWeb.Live.Planner do
     |> toggle_route(socket.assigns.selected_route)
   end
 
+  def handle_event("menu_hide", _, socket) do
+    section = if socket.assigns.section == :hide do
+      :plan
+    else
+      :hide
+    end
+    socket
+    |> assign(section: section)
+    |> noreply()
+  end
+
   # Route Management Page
   # ---------------------
 
@@ -125,18 +136,6 @@ defmodule RouteplannerWeb.Live.Planner do
     |> assign(court_cases: cases)
     |> push_cases("map-scatter", cases)
     |> noreply()
-  end
-
-  def unhide_route(socket, route, name) do
-    cases = MapSet.difference(socket.assigns.hidden_cases, MapSet.new(route.cases))
-    routes = MapSet.delete(socket.assigns.hidden_routes, name)
-    {cases, routes}
-  end
-
-  def hide_route(socket, route, name) do
-    cases = MapSet.union(socket.assigns.hidden_cases, MapSet.new(route.cases))
-    routes = MapSet.put(socket.assigns.hidden_routes, name)
-    {cases, routes}
   end
 
   def handle_event("route_hide", %{"name" => name}, socket) do
@@ -342,5 +341,17 @@ defmodule RouteplannerWeb.Live.Planner do
     |> Enum.map(fn {from, to} -> Enum.at(matrix, from) |> Enum.at(to) end)
     # give back a tuple
     {case_ids, times}
+  end
+
+  def unhide_route(socket, route, name) do
+    cases = MapSet.difference(socket.assigns.hidden_cases, MapSet.new(route.cases))
+    routes = MapSet.delete(socket.assigns.hidden_routes, name)
+    {cases, routes}
+  end
+
+  def hide_route(socket, route, name) do
+    cases = MapSet.union(socket.assigns.hidden_cases, MapSet.new(route.cases))
+    routes = MapSet.put(socket.assigns.hidden_routes, name)
+    {cases, routes}
   end
 end

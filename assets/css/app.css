@@ -52,23 +52,29 @@ div.map-controls {
 }
 
 .main-ui {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  grid-gap: 1em;
-  grid-auto-rows: 600px;
-  justify-items: center;
-
-  position: relative;
-  margin-left: 0;
-  margin-right: 0;
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 .map-view {
-  max-width: 900px;
-  width: 100%;
-  position: relative;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
 }
 
+.floating-routes-ui {
+  position: fixed;
+  z-index: 10;
+  right: 0;
+  bottom: 0;
+  margin: 1rem;
+  padding: 1rem;
+  border-radius: 5px;
+  background-color: white;
+}
 
 .routes {
   max-width: 900px;
@@ -100,6 +106,7 @@ tr.route:hover:not(.selected) {
 
 .court-cases {
   max-width: 900px;
+  height: 500px;
   display: flex;
   flex-direction: column-reverse;
   justify-content: space-between;
@@ -124,6 +131,10 @@ tr.route:hover:not(.selected) {
   width: 100%;
 }
 
+
+.routes {
+  height: 500px;
+}
 
 .routes .route-controls {
   margin-top: 1rem;
@@ -181,15 +192,19 @@ tr.route:hover:not(.selected) {
 .menu-container {
   display: flex;
   width: 100%;
-  justify-content: center;
+  justify-content: right;
 }
 .menu-container .ui-menu {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
   flex-wrap: wrap;
+}
+
+.menu-container .ui-menu.menu-show {
   margin-bottom: 2rem;
 }
+
 .menu-container .ui-menu a {
   color: #35231f;
   font-size: 1.7rem;

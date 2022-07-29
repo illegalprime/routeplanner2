@@ -56,8 +56,6 @@ in stdenv.mkDerivation (args // {
   configurePhase = args.configurePhase or ''
     runHook preConfigure
 
-    mv assets/static priv/
-
     mix deps.compile --no-deps-check --skip-umbrella-children
 
     mix assets.deploy

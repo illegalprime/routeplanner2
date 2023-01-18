@@ -16,7 +16,7 @@ defmodule RouteplannerWeb.RoutePageController do
     render(conn, :show,
       route: route,
       cases_json: cases_json,
-      form_link: "https://forms.gle/qy2g4XFEs3dL1BjTA",
+      form_link: "https://gbtu.xyz/report-back",
       title: route.name,
     )
   end

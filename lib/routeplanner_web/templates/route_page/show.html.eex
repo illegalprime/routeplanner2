@@ -12,39 +12,57 @@
     <table id="route-stops">
         <tr>
             <th>#</th>
-            <th>Name</th>
+            <th>Tenant</th>
             <th>Landlord</th>
-            <th>Street</th>
-            <th>City</th>
+            <th>Address</th>
             <th>Filed</th>
-            <th>Drive</th>
+            <th>Court</th>
+            <th>Reason</th>
+            <th>Status</th>
         </tr>
         <%= for {stop, i} <- @route.cases |> Enum.with_index do %>
             <tr
                 data-id="<%= stop.case_id %>"
             >
                 <td><%= i + 1 %></td>
-                <td><%= stop.name %></td>
-                <td><%= stop.plaintiff %></td>
-                <td><%= stop.street %></td>
-                <td><%= stop.city %></td>
-                <td><%= stop.file_date %></td>
+                <td><%= ellipsize(stop.name) %></td>
+                <td><%= ellipsize(stop.plaintiff) %></td>
                 <td>
-                    <%= if i != 0 do %>
-                        <%= to_clock(Enum.at(@route.drive_times, i - 1)) %>
-                    <% else %>
+                    <a
+                        href="https://www.google.com/maps?q=<%= to_address(stop) %>"
+                        target="_blank"
+                    >
+                    <%= stop.street %>
+                    </a>
+                </td>
+                <td><%= fmt_date(stop.file_date) %></td>
+                <td>
+                    <% court_date = maybe_date(stop.next_event_date) %>
+                    <%= if is_nil(court_date) do %>
                         &mdash;
+                    <% else %>
+                        <%= fmt_date(court_date) %>
                     <% end %>
                 </td>
+                <td><%= String.split(stop.type, "-", parts: 2) |> Enum.at(-1) %></td>
+                <td><%= stop.status %></td>
             </tr>
         <% end %>
     </table>
 
     <div class="debrief-container">
-        <h3>Fill this out when you're done!</h3>
-        <h3><a class="route-debrief" href="<%= @form_link %>"><%= @form_link %></a></h3>
-        <img class="debrief-qr" src="data:image/svg+xml;base64,<%= qr_code(@form_link) %>" />
+        <p>
+            Scan the QR code below to submit data on your trip:
+        </p>
+        <img
+            width="100px"
+            class="debrief-qr"
+            src="data:image/svg+xml;base64,<%= qr_code(@form_link) %>"
+        />
+        <a class="route-debrief" href="<%= @form_link %>"><%= @form_link %></a>
     </div>
+
+    <div class="footer-spacer" style="height:100px"></div>
 
     <script>
      const MAP_POINTS = <%= raw(@cases_json) %>;

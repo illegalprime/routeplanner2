@@ -302,13 +302,17 @@ body {
   align-items: center;
   flex-direction: column;
 }
+#show-route-page .debrief-container p,
+#show-route-page .debrief-container a {
+  margin: 0;
+}
 #show-route-page .debrief-container img.debrief-qr {
-  padding: 2rem;
+  margin: 0.5rem;
   background-color: white !important;
 }
-#show-route-page .debrief-container a.route-debrief {
-  font-family: monospace;
-  color: black;
+#route-stops tr td,
+div.debrief-container {
+  font-size: 1.3rem;
 }
 
 
@@ -318,7 +322,6 @@ body {
   }
 
   #route-stops tr td {
-    font-size: 1.5rem;
     padding-top: 0;
     padding-bottom: 0;
   }
@@ -326,14 +329,17 @@ body {
     -webkit-print-color-adjust: exact;
   }
 
+  a {
+    color: black;
+  }
+
   table tr td,
   table tr th {
     page-break-inside: avoid;
   }
 
-  img.debrief-qr {
-    width: 250px;
-    height: 250px;
+  div.debrief-container {
+    page-break-inside: avoid;
   }
 
   .footer-spacer {

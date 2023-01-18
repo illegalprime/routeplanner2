@@ -14,4 +14,26 @@ defmodule RouteplannerWeb.RoutePageView do
     |> QRCode.create(:high)
     |> Result.and_then(&QRCode.Svg.to_base64/1)
   end
+
+  def to_address(cc) do
+    "#{cc.street} #{cc.city}, #{cc.state} #{cc.zip}"
+  end
+
+  def maybe_date(date) do
+    case String.split(date, "/") |> Enum.map(&Integer.parse/1) do
+      [{mm, ""}, {dd, ""}, {yyyy, ""}] -> Date.new!(yyyy, mm, dd)
+      _ -> nil
+    end
+  end
+
+  def fmt_date(date) do
+    raw(Calendar.strftime(date, "%b.&nbsp;%d, %Y"))
+  end
+
+  def ellipsize(name) do
+    case String.split(name, ~r/\s+/, parts: 3) do
+      [a, b, c] -> "#{a} #{b} …"
+      _ -> name
+    end
+  end
 end

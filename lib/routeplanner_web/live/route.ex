@@ -56,7 +56,7 @@ defmodule RouteplannerWeb.Live.Route do
 
   def ellipsize(name) do
     case String.split(name, ~r/\s+/, parts: 3) do
-      [a, b, c] -> "#{a} #{b} …"
+      [a, b, _] -> "#{a} #{b}…"
       _ -> name
     end
   end

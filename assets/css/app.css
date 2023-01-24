@@ -280,27 +280,50 @@ body {
 }
 
 
+#show-route-page .row .column {
+  margin-bottom: unset;
+  font-size: 1.5rem;
+}
+#show-route-page .row.route-stop {
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+#show-route-page .row.route-stop .column {
+  padding: 0.25rem;
+}
+.row.route-stop .column.drive-time {
+  text-align: right;
+}
+.row.route-stop .column.case-type {
+  text-align: right;
+}
+.row.route-stop .column.court-date {
+  text-align: center;
+}
 #show-route-page .route-header {
   display: flex;
   flex-direction: row;
   align-items: baseline;
   justify-content: space-between;
 }
-#show-route-page #route-stops tr:nth-child(even) {
+#show-route-page .route-stop:nth-child(odd) {
   background-color: #f2f2f2;
 }
-#show-route-page #route-stops tr td:last-child,
-#show-route-page #route-stops tr td:first-child,
-#show-route-page #route-stops tr th:last-child,
-#show-route-page #route-stops tr th:first-child
-{
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
 #show-route-page .debrief-container {
-  display: flex;
+  display: none;
   align-items: center;
   flex-direction: column;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  font-size: 1rem;
+  width: 125px;
+  text-align: center;
+  background-color: white;
 }
 #show-route-page .debrief-container p,
 #show-route-page .debrief-container a {
@@ -310,32 +333,37 @@ body {
   margin: 0.5rem;
   background-color: white !important;
 }
-#route-stops tr td,
-div.debrief-container {
-  font-size: 1.3rem;
-}
 
+.map-container {
+  height: 600px;
+  width: 100%;
+  position: relative;
+}
+#map {
+  height: 600px;
+  width: 100%;
+}
 
 @media print {
   header {
     display: none;
   }
 
-  #route-stops tr td {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  #route-stops tr {
+  #show-route-page .route-stop {
     -webkit-print-color-adjust: exact;
+    page-break-inside: avoid;
+  }
+
+  #show-route-page .debrief-container {
+    display: flex;
+  }
+
+  .container {
+    max-width: 100%;
   }
 
   a {
     color: black;
-  }
-
-  table tr td,
-  table tr th {
-    page-break-inside: avoid;
   }
 
   div.debrief-container {

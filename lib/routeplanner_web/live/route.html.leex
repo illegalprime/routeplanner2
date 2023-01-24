@@ -8,59 +8,69 @@
         </h3>
     </span>
     <br/>
-    <div data-editable="no" style="height:600px;width:100%;" id="map"></div>
-    <br/>
-    <table id="route-stops">
-        <tr>
-            <th>#</th>
-            <th>Tenant</th>
-            <th>Landlord</th>
-            <th>Address</th>
-            <th>Filed</th>
-            <th>Court</th>
-            <th>Reason</th>
-            <th>Status</th>
-        </tr>
-        <%= for {stop, i} <- @route.cases |> Enum.with_index do %>
-            <tr
-                data-id="<%= stop.case_id %>"
-            >
-                <td><%= i + 1 %></td>
-                <td><%= ellipsize(stop.name) %></td>
-                <td><%= ellipsize(stop.plaintiff) %></td>
-                <td>
-                    <a
-                        href="https://www.google.com/maps?q=<%= to_address(stop) %>"
-                        target="_blank"
-                    >
+    <div class="map-container">
+        <div data-editable="no" id="map"></div>
+        <div class="debrief-container">
+            <p>
+                Scan the QR code below to
+                submit data on your trip:
+            </p>
+            <img
+                width="100px"
+                class="debrief-qr"
+                src="data:image/svg+xml;base64,<%= qr_code(@form_link) %>"
+            />
+            <a class="route-debrief" href="<%= @form_link %>"><%= @form_link %></a>
+        </div>
+    </div>
+    <%= for {stop, i} <- @route.cases |> Enum.with_index do %>
+        <div class="row route-stop">
+            <div class="column column-100">
+                <b><%= i + 1 %>.</b>
+                <%= stop.name %>
+                <i>vs.</i>
+                <%= stop.plaintiff %>
+                <i>(LL)</i>
+            </div>
+            <div class="column column-75">
+                <a
+                    href="https://www.google.com/maps?q=<%= to_address(stop) %>"
+                    target="_blank"
+                >
                     <%= stop.street %>
-                    </a>
-                </td>
-                <td><%= fmt_date(stop.file_date) %></td>
-                <td>
-                    <% court_date = maybe_date(stop.next_event_date) %>
-                    <%= if is_nil(court_date) do %>
-                        &mdash;
-                    <% else %>
-                        <%= fmt_date(court_date) %>
+                </a>
+            </div>
+            <div class="column column-25 drive-time">
+                <i>
+                    <%= if i != 0 do %>
+                        <% t = Enum.at(@route.drive_times, i - 1) %>
+                        <%= "~#{trunc(t / 60) + 1}min." %>
                     <% end %>
-                </td>
-                <td><%= String.split(stop.type, "-", parts: 2) |> Enum.at(-1) %></td>
-                <td><%= stop.status %></td>
-            </tr>
-        <% end %>
-    </table>
+                </i>
+            </div>
+            <div class="column column-25 file-date">
+                <i><%= fmt_date(stop.file_date) %></i> (F)
+            </div>
+            <div class="column column-25 court-date">
+                <% court_date = maybe_date(stop.next_event_date) %>
+                <%= if is_nil(court_date) do %>
+                    &mdash;
+                <% else %>
+                    <i><%= fmt_date(court_date) %></i> (C)
+                <% end %>
+            </div>
+            <div class="column column-50 case-type">
+                <i><%= String.split(stop.type, "-", parts: 2) |> Enum.at(-1) %></i>
+                (<%= stop.status %>)
+            </div>
+        </div>
+    <% end %>
 
-    <div class="debrief-container">
-        <p>
-            Scan the QR code below to submit data on your trip:
-        </p>
-        <img
-            width="100px"
-            class="debrief-qr"
-            src="data:image/svg+xml;base64,<%= qr_code(@form_link) %>"
-        />
-        <a class="route-debrief" href="<%= @form_link %>"><%= @form_link %></a>
+    <br/>
+    <div class="row" style="flex-direction:row;text-align:center;">
+        <div class="column column-33"> LL: Landlord </div>
+        <div class="column column-33"> F: Filed Date </div>
+        <div class="column column-33"> C: Court Date </div>
     </div>
 
     <div class="footer-spacer" style="height:100px"></div>

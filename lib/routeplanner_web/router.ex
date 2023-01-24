@@ -63,7 +63,7 @@ defmodule RouteplannerWeb.Router do
     pipe_through [:browser, :guardian, :browser_auth]
 
     live "/", Live.Planner
-    get "/route/:route", RoutePageController, :show
+    live "/route/:route", Live.Route
 
     resources "/profile", ProfileController, only: [:show], singleton: true
     delete "/logout", LoginController, :logout

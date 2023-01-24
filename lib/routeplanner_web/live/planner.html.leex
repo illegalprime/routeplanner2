@@ -122,7 +122,7 @@
                             <% end %>
 
                             <a target="_blank"
-                               href="<%= Routes.route_page_path(@socket, :show, route.name) %>"
+                               href="<%= Routes.live_path(@socket, RouteplannerWeb.Live.Route, route.name) %>"
                                class="fas fa-external-link-alt">
                                 <%= FontAwesome.icon("external-link-alt", type: "solid") %>
                             </a>

@@ -1,5 +1,29 @@
-defmodule RouteplannerWeb.RoutePageView do
-  use RouteplannerWeb, :view
+defmodule RouteplannerWeb.Live.Route do
+  use RouteplannerWeb, :live_view
+
+  alias Routeplanner.CourtCases
+  alias Routeplanner.CourtCases.CourtCase
+
+  @impl true
+  def mount(%{"route" => route}, _session, socket) do
+    route = Routeplanner.Routes.find(route)
+    cases = route.cases |> Enum.map(&CourtCases.by_id/1)
+    route = Map.put(route, :cases, cases)
+    {:ok, cases_json} = cases
+    |> Enum.map(&CourtCase.to_encodable/1)
+    |> Jason.encode()
+
+    socket
+    |> assign(route: route)
+    |> assign(cases_json: cases_json)
+    |> assign(form_link: "https://gbtu.xyz/report-back")
+    |> assign(title: route.name)
+    |> ok()
+  end
+
+  #
+  # View Functions
+  #
 
   def to_clock(secs) do
     secs
@@ -36,4 +60,7 @@ defmodule RouteplannerWeb.RoutePageView do
       _ -> name
     end
   end
+
+  def ok(socket), do: {:ok, socket}
+  def noreply(socket), do: {:noreply, socket}
 end

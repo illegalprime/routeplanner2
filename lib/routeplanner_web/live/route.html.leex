@@ -1,3 +1,4 @@
+<main role="main" class="container">
 <section id="show-route-page">
     <span class="route-header">
         <h1><%= @route.name %> </h1>
@@ -74,6 +75,6 @@
          });
      };
     </script>
-    <script src="<%= Routes.asset_path(@conn, :gmaps) %>" async></script>
+    <script src="<%= Routes.asset_path(@socket, :gmaps) %>" async></script>
 </section>
-
+</main>

@@ -21,6 +21,8 @@ defmodule Routeplanner.CourtCases do
     Repo.all(from c in CourtCase, where: c.file_date > ^start)
   end
 
+  def by_id(nil), do: nil
+
   def by_id(id) do
     Repo.get_by(CourtCase, case_id: id)
   end

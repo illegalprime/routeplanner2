@@ -1,13 +1,19 @@
 defmodule RouteplannerWeb.Live.Route do
+  require Logger
   use RouteplannerWeb, :live_view
 
+  alias Routeplanner.Repo
   alias Routeplanner.CourtCases
   alias Routeplanner.CourtCases.CourtCase
+  alias Routeplanner.ReportBacks
 
   @impl true
   def mount(%{"route" => route}, _session, socket) do
     route = Routeplanner.Routes.find(route)
-    cases = route.cases |> Enum.map(&CourtCases.by_id/1)
+    cases = Enum.map(route.cases, &CourtCases.by_id/1)
+    notes = Enum.map(route.cases, &ReportBacks.find_or_new/1)
+    chngs = Enum.map(notes, &ReportBacks.change_report_back/1)
+    forms = route.cases |> Enum.zip(Enum.zip(notes, chngs)) |> Enum.into(%{})
     route = Map.put(route, :cases, cases)
     {:ok, cases_json} = cases
     |> Enum.map(&CourtCase.to_encodable/1)
@@ -18,7 +24,26 @@ defmodule RouteplannerWeb.Live.Route do
     |> assign(cases_json: cases_json)
     |> assign(form_link: "https://gbtu.xyz/report-back")
     |> assign(title: route.name)
+    |> assign(report_backs: forms)
     |> ok()
+  end
+
+  @impl true
+  def handle_event(
+    "save",
+    %{"report_back" => rb},
+    %{assigns: %{report_backs: rbs}} = socket
+  ) do
+    {report_back, _} = rbs[rb["case_id"]]
+
+    changeset = ReportBacks.change_report_back(report_back, rb)
+    |> Map.put(:action, :update)
+
+    report_back = Repo.update!(changeset)
+
+    socket
+    |> assign(report_backs: %{rbs | rb["case_id"] => {report_back, changeset}})
+    |> noreply()
   end
 
   #

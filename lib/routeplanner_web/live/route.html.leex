@@ -9,7 +9,7 @@
     </span>
     <br/>
     <div class="map-container">
-        <div data-editable="no" id="map"></div>
+        <div data-editable="no" id="map" phx-update="ignore"></div>
         <div class="debrief-container">
             <p>
                 Scan the QR code below to
@@ -23,6 +23,7 @@
             <a class="route-debrief" href="<%= @form_link %>"><%= @form_link %></a>
         </div>
     </div>
+
     <%= for {stop, i} <- @route.cases |> Enum.with_index do %>
         <div class="row route-stop">
             <div class="column column-100">
@@ -64,6 +65,51 @@
                 (<%= stop.status %>)
             </div>
         </div>
+
+        <% {report_back, changeset} = @report_backs[stop.case_id] %>
+        <%= f = form_for changeset, "#",
+            id: stop.case_id, phx_change: "save", phx_submit: "save" %>
+            <%= hidden_input f, :case_id %>
+
+        <div class="row route-form">
+            <div class="column column-33 same-row">
+                <%= checkbox f, :knocked %>
+                <%= label f, :knocked, "Knocked on door." %>
+                <%= error_tag f, :knocked %>
+            </div>
+            <div class="column column-33 same-row">
+                <%= checkbox f, :talked %>
+                <%= label f, :talked, "Talked to tenant." %>
+                <%= error_tag f, :talked %>
+            </div>
+            <div class="column column-33 same-row">
+                <%= checkbox f, :followup %>
+                <%= label f, :followup, "Should follow up." %>
+                <%= error_tag f, :followup %>
+            </div>
+        </div>
+        <div class="row route-form">
+            <div class="column column-33">
+                <%= label f, :phone %>
+                <%= telephone_input f, :phone, placeholder: "617 555-1234" %>
+                <%= error_tag f, :phone %>
+            </div>
+
+            <div class="column column-66">
+                <%= label f, :email %>
+                <%= text_input f, :email, placeholder: "tenant@example.org" %>
+                <%= error_tag f, :email %>
+            </div>
+        </div>
+        <div class="row route-form">
+            <div class="column column-100">
+                <%= label f, :notes, "Other Notes" %>
+                <%= textarea f, :notes, placeholder: "e.g. what we should follow up on" %>
+                <%= error_tag f, :notes %>
+            </div>
+        </div>
+        </form>
+
     <% end %>
 
     <br/>

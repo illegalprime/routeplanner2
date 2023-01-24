@@ -310,7 +310,18 @@ body {
   align-items: baseline;
   justify-content: space-between;
 }
-#show-route-page .route-stop:nth-child(odd) {
+#show-route-page form {
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+#show-route-page form textarea {
+  margin-bottom: 0;
+}
+#show-route-page form input[type=checkbox] {
+  width: 20px;
+  height: 20px;
+}
+#show-route-page .route-stop {
   background-color: #f2f2f2;
 }
 #show-route-page .debrief-container {
@@ -332,6 +343,33 @@ body {
 #show-route-page .debrief-container img.debrief-qr {
   margin: 0.5rem;
   background-color: white !important;
+}
+
+.row.route-form {
+  flex-direction: row;
+  justify-content: space-between;
+}
+.row.route-form .column label,
+.row.route-form .column input {
+  font-size: 1.3rem;
+}
+.row.route-form .column:not(:last-child) {
+  margin-right: 0.75rem;
+}
+.route-form .same-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.route-form .same-row label {
+  margin: 0;
+  margin-bottom: 1rem;
+  margin-left: 1rem;
+}
+.route-form .same-row input {
+  margin: 0;
+  margin-bottom: 1.5rem;
 }
 
 .map-container {

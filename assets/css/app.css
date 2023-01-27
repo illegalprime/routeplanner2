@@ -294,6 +294,27 @@ table.routes-list .fas svg {
   width: 2rem;
   margin-bottom: -0.25rem;
 }
+.paginator {
+  flex-direction: row;
+}
+.paginator svg {
+  width: 24px;
+  height: 24px;
+  margin-bottom: -12px;
+}
+.paginator .back {
+  text-align: right;
+}
+.paginator .forward {
+  text-align: left;
+}
+.paginator .number {
+  text-align: center;
+  font-size: 22px;
+}
+.paginator .fas:not(.active) {
+  opacity: 0.2;
+}
 
 
 #show-route-page .row .column {

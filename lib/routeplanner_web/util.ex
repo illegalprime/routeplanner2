@@ -8,6 +8,13 @@ defmodule RouteplannerWeb.Util do
     |> Result.and_then(&QRCode.Svg.to_base64/1)
   end
 
+  def bool2text(flag, text) do
+    case flag do
+      true -> text
+      false -> ""
+    end
+  end
+
   def ok(socket), do: {:ok, socket}
   def noreply(socket), do: {:noreply, socket}
 end

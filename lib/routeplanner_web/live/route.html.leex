@@ -98,20 +98,20 @@
         <div class="row route-form">
             <div class="column column-33">
                 <%= label f, :phone %>
-                <%= telephone_input f, :phone, placeholder: "617 555-1234" %>
+                <%= telephone_input f, :phone, placeholder: "#" %>
                 <%= error_tag f, :phone %>
             </div>
 
             <div class="column column-66">
                 <%= label f, :email %>
-                <%= text_input f, :email, placeholder: "tenant@example.org" %>
+                <%= text_input f, :email, placeholder: "@" %>
                 <%= error_tag f, :email %>
             </div>
         </div>
         <div class="row route-form">
             <div class="column column-100">
                 <%= label f, :notes, "Other Notes" %>
-                <%= textarea f, :notes, placeholder: "e.g. what we should follow up on" %>
+                <%= textarea f, :notes, placeholder: "e.g. what to follow up on" %>
                 <%= error_tag f, :notes %>
             </div>
         </div>

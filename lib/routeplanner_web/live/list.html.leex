@@ -50,4 +50,23 @@
             </tr>
         <% end %>
     </table>
+    <div class="row paginator">
+        <div class="column column-33 back">
+            <a class="fas fa-chevron-left <%= bool2text(@page.back, "active") %>"
+               phx-click="back"
+            >
+                <%= FontAwesome.icon("chevron-left", type: "solid") %>
+            </a>
+        </div>
+        <div class="column column-33 number">
+            <%= @page.no + 1 %>
+        </div>
+        <div class="column column-33 forward">
+            <a class="fas fa-chevron-right <%= bool2text(@page.front, "active") %>"
+               phx-click="forward"
+            >
+                <%= FontAwesome.icon("chevron-right", type: "solid") %>
+            </a>
+        </div>
+    </div>
 </main>

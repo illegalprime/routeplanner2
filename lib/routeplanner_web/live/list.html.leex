@@ -1,0 +1,53 @@
+<main role="main" class="container">
+    <br/>
+    <header>
+        <h1>All Routes</h1>
+    </header>
+    <table class="routes-list">
+        <tr>
+            <th>Route Name</th>
+            <th style="text-align:right;">QR Code</th>
+        </tr>
+        <%= for {route, i} <- Enum.with_index(@routes) do %>
+            <% link = get_link(@socket, route) %>
+            <% expiry = to_unix(route.public_until) %>
+            <tr>
+                <td class="route-name">
+                    <a href="<%= link %>" target="_blank">
+                        <h3 style="margin:0;">
+                            <%= route.name %>
+                        </h3>
+                    </a>
+                    <%= if is_nil(expiry) or @now > expiry do %>
+                        <a class="fas fa-eye-slash"
+                           phx-click="make_route_public"
+                           phx-value-idx="<%= i %>"
+                        >
+                            <%= FontAwesome.icon("eye-slash", type: "solid") %>
+                        </a>
+                    <% else %>
+                        <a class="fas fa-eye"
+                           phx-click="make_route_private"
+                           phx-value-idx="<%= i %>"
+                        >
+                            <%= FontAwesome.icon("eye", type: "solid") %>
+                        </a>
+                    <% end %>
+                </td>
+                <td rowspan="2" style="text-align:right;">
+                    <img
+                        width="200px"
+                        class="debrief-qr"
+                        src="data:image/svg+xml;base64,<%= qr_code(link) %>"
+                    />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <%= length(route.cases) %> people.
+                    ~ <%= trunc(Enum.sum(route.drive_times) / 60) + 1 %>mins.
+                </td>
+            </tr>
+        <% end %>
+    </table>
+</main>

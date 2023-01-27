@@ -9,6 +9,7 @@ defmodule Routeplanner.Routes.Route do
     field :name, :string
     field :visited, :boolean
     field :deleted, :boolean
+    field :public_until, :utc_datetime, default: nil
 
     timestamps()
   end
@@ -16,7 +17,7 @@ defmodule Routeplanner.Routes.Route do
   @doc false
   def changeset(route, attrs) do
     route
-    |> cast(attrs, [:name, :cases, :drive_times, :visited, :deleted])
+    |> cast(attrs, [:name, :cases, :drive_times, :visited, :deleted, :public_until])
     |> validate_required([:name, :cases, :drive_times])
     |> validate_cases_exist()
     |> unique_constraint(:name)

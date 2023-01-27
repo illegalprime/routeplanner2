@@ -8,8 +8,38 @@ defmodule RouteplannerWeb.Live.Route do
   alias Routeplanner.ReportBacks
 
   @impl true
-  def mount(%{"route" => route}, _session, socket) do
+  def mount(%{"route" => route}, session, socket) do
+    token = RouteplannerWeb.Authentication.load_user(session)
     route = Routeplanner.Routes.find(route)
+    now = DateTime.utc_now() |> DateTime.to_unix()
+
+    case {token, to_unix(route.public_until)} do
+      {{:ok, _user}, _}  ->            allow(socket, route)
+      {{:error, _}, nil} ->            deny(socket, :private)
+      {{:error, _}, t} when t > now -> allow(socket, route)
+      {{:error, _}, _t}  ->            deny(socket, :expired)
+    end
+  end
+
+  def to_unix(nil), do: nil
+  def to_unix(date), do: DateTime.to_unix(date)
+
+  def deny(socket, :private) do
+    redir_deny(socket, "Authentication Error, that route is private.")
+  end
+
+  def deny(socket, :expired) do
+    redir_deny(socket, "Your ability to view this route has expired.")
+  end
+
+  def redir_deny(socket, reason) do
+    socket
+    |> put_flash(:error, reason)
+    |> redirect(to: Routes.login_path(socket, :index))
+    |> ok()
+  end
+
+  def allow(socket, route) do
     cases = Enum.map(route.cases, &CourtCases.by_id/1)
     notes = Enum.map(route.cases, &ReportBacks.find_or_new/1)
     chngs = Enum.map(notes, &ReportBacks.change_report_back/1)

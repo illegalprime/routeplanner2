@@ -1,12 +1,17 @@
 <main role="main" class="container">
+    <br/>
 <section id="show-route-page">
-    <span class="route-header">
-        <h1><%= @route.name %> </h1>
-        <h3>
-            <%= @route.cases |> length() %> people,
-            <%= @route.drive_times |> Enum.sum() |> to_clock() %> min.
-        </h3>
-    </span>
+    <div class="row">
+        <div class="column">
+            <h1><%= @route.name %> </h1>
+        </div>
+        <div class="column" style="text-align:right;">
+            <h3>
+                <%= @route.cases |> length() %> people,
+                <%= @route.drive_times |> Enum.sum() |> to_clock() %> min.
+            </h3>
+        </div>
+    </div>
     <br/>
     <div class="map-container">
         <div data-editable="no" id="map" phx-update="ignore"></div>
@@ -23,6 +28,8 @@
             <a class="route-debrief" href="<%= @form_link %>"><%= @form_link %></a>
         </div>
     </div>
+
+    <br/>
 
     <%= for {stop, i} <- @route.cases |> Enum.with_index do %>
         <div class="row route-stop">

@@ -69,6 +69,12 @@ defmodule Routeplanner.Routes do
     |> Repo.update!()
   end
 
+  def make_public_until!(route, date) do
+    route
+    |> Route.changeset(%{public_until: date})
+    |> Repo.update!()
+  end
+
   def verify(params) do
     %Route{}
     |> Route.changeset(params)

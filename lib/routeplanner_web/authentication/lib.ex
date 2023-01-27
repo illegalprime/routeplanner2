@@ -2,6 +2,9 @@ defmodule RouteplannerWeb.Authentication do
   use Guardian, otp_app: :routeplanner
   alias Routeplanner.{Accounts, Accounts.Account}
 
+  @claims %{"typ" => "access"}
+  @token_key "guardian_default_token" # TODO: important?
+
   def subject_for_token(resource, _claims) do
     {:ok, to_string(resource.id)}
   end
@@ -12,6 +15,14 @@ defmodule RouteplannerWeb.Authentication do
       account -> {:ok, account}
     end
   end
+
+  def load_user(%{@token_key => token}) do
+    case Guardian.decode_and_verify(__MODULE__, token, @claims) do
+      {:ok, claims} -> resource_from_claims(claims)
+      _ -> {:error, :not_authorized}
+    end
+  end
+  def load_user(_no_token), do: {:error, :not_authorized}
 
   def log_in(conn, account) do
     __MODULE__.Plug.sign_in(conn, account)

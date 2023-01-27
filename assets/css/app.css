@@ -280,6 +280,22 @@ body {
 }
 
 
+table.routes-list .route-name {
+  white-space: nowrap;
+}
+table.routes-list h3 {
+  display: inline;
+}
+table.routes-list .fas {
+  margin-left: 1rem;
+}
+table.routes-list .fas svg {
+  height: 2rem;
+  width: 2rem;
+  margin-bottom: -0.25rem;
+}
+
+
 #show-route-page .row .column {
   margin-bottom: unset;
   font-size: 1.5rem;

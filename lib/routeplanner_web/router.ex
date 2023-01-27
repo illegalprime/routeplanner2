@@ -63,16 +63,21 @@ defmodule RouteplannerWeb.Router do
     pipe_through [:browser, :guardian, :browser_auth]
 
     live "/", Live.Planner
-    live "/route/:route", Live.Route
-    get "/routes", RoutesPageController, :list
+    live "/routes", Live.List
 
     resources "/profile", ProfileController, only: [:show], singleton: true
     delete "/logout", LoginController, :logout
   end
 
+  scope "/route", RouteplannerWeb do
+    pipe_through [:browser, :guardian]
+    live "/:route", Live.Route
+  end
+
   # javascript behind API keys
   scope "/third-party", RouteplannerWeb do
-    pipe_through [:protected_js, :guardian, :browser_auth]
+    # TODO: google api key must be secret?
+    pipe_through [:protected_js, :guardian]
     get "/google-maps.js", AssetController, :gmaps
   end
 

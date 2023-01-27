@@ -64,6 +64,7 @@ defmodule RouteplannerWeb.Router do
 
     live "/", Live.Planner
     live "/route/:route", Live.Route
+    get "/routes", RoutesPageController, :list
 
     resources "/profile", ProfileController, only: [:show], singleton: true
     delete "/logout", LoginController, :logout

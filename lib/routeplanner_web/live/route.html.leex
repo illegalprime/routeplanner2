@@ -73,7 +73,7 @@
             </div>
         </div>
 
-        <% {report_back, changeset} = @report_backs[stop.case_id] %>
+        <% {_report_back, changeset} = @report_backs[stop.case_id] %>
         <%= f = form_for changeset, "#",
             id: stop.case_id, phx_change: "save", phx_submit: "save" %>
             <%= hidden_input f, :case_id %>

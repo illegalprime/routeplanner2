@@ -21,9 +21,6 @@ defmodule RouteplannerWeb.Live.Route do
     end
   end
 
-  def to_unix(nil), do: nil
-  def to_unix(date), do: DateTime.to_unix(date)
-
   def deny(socket, :private) do
     redir_deny(socket, "Authentication Error, that route is private.")
   end
@@ -88,12 +85,6 @@ defmodule RouteplannerWeb.Live.Route do
     |> Enum.join(":")
   end
 
-  def qr_code(text) do
-    text
-    |> QRCode.create(:high)
-    |> Result.and_then(&QRCode.Svg.to_base64/1)
-  end
-
   def to_address(cc) do
     "#{cc.street} #{cc.city}, #{cc.state} #{cc.zip}"
   end
@@ -115,7 +106,4 @@ defmodule RouteplannerWeb.Live.Route do
       _ -> name
     end
   end
-
-  def ok(socket), do: {:ok, socket}
-  def noreply(socket), do: {:noreply, socket}
 end

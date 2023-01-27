@@ -61,9 +61,6 @@ defmodule RouteplannerWeb.Live.Planner do
     push_event(socket, event, Map.put(opts, :points, cases))
   end
 
-  def noreply(socket), do: {:noreply, socket}
-  def ok(socket), do: {:ok, socket}
-
   def mount(_params, _session, socket) do
     # only show cases in the past n days
     cases = fetch_cases(@days_filter)
@@ -191,13 +188,6 @@ defmodule RouteplannerWeb.Live.Planner do
     |> noreply()
   end
 
-  def cases_str_to_list(cases) do
-    cases
-    |> String.split("\n")
-    |> Enum.map(&String.trim/1)
-    |> Enum.filter(&(String.length(&1) > 0))
-  end
-
   # TODO: newlines are removed in case id input
   def handle_event("validate_import_route", %{"route" => route}, socket) do
     cs = %{}
@@ -225,26 +215,6 @@ defmodule RouteplannerWeb.Live.Planner do
         socket
         |> assign(modal: %{current: :import_route, import_route: %{cs: cs}})
         |> noreply()
-    end
-  end
-
-  defp toggle_route(socket, name) do
-    # if there's no route to show fall back on all cases
-    if is_nil(name) or socket.assigns.selected_route == name do
-      socket
-      |> assign(selected_route: nil)
-      |> push_event("map-route", %{"points" => []})
-      |> noreply
-    else
-      # TODO: do table join
-      cases = Routeplanner.Routes.find(name).cases
-      |> Enum.map(&CourtCases.by_id/1)
-      |> Enum.map(&CourtCase.to_encodable/1)
-
-      socket
-      |> assign(selected_route: name)
-      |> push_event("map-route", %{"points" => cases})
-      |> noreply
     end
   end
 
@@ -319,6 +289,33 @@ defmodule RouteplannerWeb.Live.Planner do
         socket
         |> assign(modal: %{current: :plan_route, plan_route: %{cs: cs}})
         |> noreply()
+    end
+  end
+
+  def cases_str_to_list(cases) do
+    cases
+    |> String.split("\n")
+    |> Enum.map(&String.trim/1)
+    |> Enum.filter(&(String.length(&1) > 0))
+  end
+
+  defp toggle_route(socket, name) do
+    # if there's no route to show fall back on all cases
+    if is_nil(name) or socket.assigns.selected_route == name do
+      socket
+      |> assign(selected_route: nil)
+      |> push_event("map-route", %{"points" => []})
+      |> noreply
+    else
+      # TODO: do table join
+      cases = Routeplanner.Routes.find(name).cases
+      |> Enum.map(&CourtCases.by_id/1)
+      |> Enum.map(&CourtCase.to_encodable/1)
+
+      socket
+      |> assign(selected_route: name)
+      |> push_event("map-route", %{"points" => cases})
+      |> noreply
     end
   end
 

@@ -92,6 +92,7 @@ defmodule RouteplannerWeb do
       import RouteplannerWeb.ErrorHelpers
       import RouteplannerWeb.Gettext
       alias RouteplannerWeb.Router.Helpers, as: Routes
+      import RouteplannerWeb.Util
     end
   end
 

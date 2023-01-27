@@ -17,7 +17,7 @@ defmodule RouteplannerWeb.AuthController do
         case Accounts.is_approved(account.email) do
           true -> conn
           |> Authentication.log_in(account)
-          |> redirect(to: Routes.page_path(conn, :index))
+          |> redirect(to: "/")
 
           false -> conn
           |> put_flash(:error, "Your account must be approved by Michael, send him a message!")

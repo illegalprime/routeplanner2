@@ -6,7 +6,7 @@ defmodule RouteplannerWeb.LoginController do
 
   def index(conn, _params) do
     if Authentication.get_current_account(conn) do
-      redirect(conn, to: Routes.page_path(conn, :index))
+      redirect(conn, to: "/")
     else
         render(conn, :index,
           changeset: Accounts.change_account(),

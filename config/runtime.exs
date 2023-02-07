@@ -33,8 +33,6 @@ config :routeplanner, RouteplannerWeb.AssetController,
 config :routeplanner, Routeplanner.GoogleMaps,
   gmaps_api_key: System.get_env("GMAPS_API_KEY")
 
-config :routeplanner, Routeplanner.TravellingSalesmen,
-  tsp_bin_path: System.get_env("TSP_BIN_PATH")
 
 if config_env() == :prod do
   database_url =

@@ -35,6 +35,9 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+config :routeplanner, Routeplanner.TravellingSalesmen,
+  tsp_bin_path: System.get_env("TSP_BIN_PATH")
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 

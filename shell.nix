@@ -1,4 +1,9 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import (builtins.fetchGit rec {
+  name = "nixos-22.11";
+  url = "https://github.com/nixos/nixpkgs/";
+  ref = "refs/heads/${name}";
+  rev = "36adaa6aaa6b03e59102df0c1b12cdc3f23fd112";
+}) {}}:
 
 with pkgs;
 
@@ -27,7 +32,6 @@ mkShell {
     CoreServices
   ]);
 
-  LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
   LANG = "en_US.UTF-8";
   LC_ALL = "en_US.UTF-8";
 

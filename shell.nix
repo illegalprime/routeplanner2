@@ -1,8 +1,8 @@
-{ pkgs ? import (builtins.fetchGit rec {
-  name = "nixos-22.11";
-  url = "https://github.com/nixos/nixpkgs/";
-  ref = "refs/heads/${name}";
-  rev = "36adaa6aaa6b03e59102df0c1b12cdc3f23fd112";
+{ pkgs ? import (builtins.fetchTarball {
+  name = "nixpkgs-darwin-21.11-routeplanner";
+  sha256 = "0gqzshg6xlkv11v8p23fyj4h5bi7kh0zfygh7rd1y77y716cm8xi";
+  url = let rev = "5dab6490fe6d72b3f120ae8660181e20f396fbdf"; in
+    "https://github.com/nixos/nixpkgs/archive/${rev}.tar.gz";
 }) {}}:
 
 with pkgs;
@@ -31,9 +31,6 @@ mkShell {
     CoreFoundation
     CoreServices
   ]);
-
-  LANG = "en_US.UTF-8";
-  LC_ALL = "en_US.UTF-8";
 
   # Put the PostgreSQL databases in the project diretory.
   # NOTE: the following secrets are dev only, not used in prod
